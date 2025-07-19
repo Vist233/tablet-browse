@@ -1,0 +1,288 @@
+/**
+ * TabletBrowse Pro - 超级菜单样式
+ */
+
+/* 超级菜单主容器 */
+.tb-super-menu {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.tb-super-menu-visible {
+  opacity: 1 !important;
+  transform: scale(1) translateY(0) !important;
+}
+
+.tb-super-menu-hiding {
+  opacity: 0 !important;
+  transform: scale(0.9) translateY(5px) !important;
+}
+
+/* 菜单项样式 */
+.tb-menu-item {
+  border-radius: 6px;
+  margin: 2px 0;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.tb-menu-item:hover {
+  background: rgba(0, 123, 255, 0.1);
+}
+
+.tb-menu-item:active {
+  background: rgba(0, 123, 255, 0.2);
+  transform: scale(0.98);
+}
+
+.tb-menu-item-content {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  gap: 10px;
+}
+
+.tb-menu-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.tb-menu-label {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 400;
+  color: #333;
+}
+
+.tb-menu-arrow {
+  font-size: 12px;
+  color: #666;
+  flex-shrink: 0;
+}
+
+/* 子菜单样式 */
+.tb-submenu {
+  z-index: 1;
+}
+
+.tb-submenu-item {
+  margin: 1px 0;
+}
+
+.tb-submenu-item .tb-menu-item-content {
+  padding: 8px 10px;
+}
+
+.tb-submenu-item .tb-menu-icon {
+  font-size: 14px;
+  width: 16px;
+}
+
+.tb-submenu-item .tb-menu-label {
+  font-size: 13px;
+}
+
+/* 分隔线样式 */
+.tb-menu-separator {
+  opacity: 0.6;
+}
+
+/* 暗色主题支持 */
+@media (prefers-color-scheme: dark) {
+  .tb-super-menu {
+    background: rgba(40, 40, 40, 0.95) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .tb-submenu {
+    background: rgba(40, 40, 40, 0.95) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .tb-menu-item:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .tb-menu-item:active {
+    background: rgba(255, 255, 255, 0.2) !important;
+  }
+  
+  .tb-menu-label {
+    color: #e0e0e0 !important;
+  }
+  
+  .tb-menu-arrow {
+    color: #999 !important;
+  }
+  
+  .tb-menu-separator {
+    background: rgba(255, 255, 255, 0.2) !important;
+  }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  .tb-super-menu {
+    background: white !important;
+    border: 2px solid #000 !important;
+  }
+  
+  .tb-menu-item {
+    border: 1px solid transparent;
+  }
+  
+  .tb-menu-item:hover {
+    background: #000 !important;
+    border-color: #000 !important;
+  }
+  
+  .tb-menu-item:hover .tb-menu-label {
+    color: white !important;
+  }
+  
+  .tb-menu-label {
+    color: #000 !important;
+    font-weight: bold !important;
+  }
+}
+
+/* 触摸设备优化 */
+@media (pointer: coarse) {
+  .tb-menu-item-content {
+    padding: 12px 14px;
+    min-height: 44px;
+  }
+  
+  .tb-menu-icon {
+    font-size: 18px;
+    width: 24px;
+  }
+  
+  .tb-menu-label {
+    font-size: 16px;
+  }
+  
+  .tb-submenu-item .tb-menu-item-content {
+    padding: 10px 12px;
+    min-height: 40px;
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .tb-super-menu {
+    min-width: 250px !important;
+    max-width: 90vw !important;
+  }
+  
+  .tb-menu-item-content {
+    padding: 12px 16px;
+  }
+  
+  .tb-menu-label {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tb-super-menu {
+    min-width: 200px !important;
+    border-radius: 8px !important;
+  }
+  
+  .tb-menu-item-content {
+    padding: 10px 12px;
+  }
+  
+  .tb-menu-label {
+    font-size: 14px;
+  }
+  
+  .tb-menu-icon {
+    font-size: 16px;
+    width: 20px;
+  }
+}
+
+/* 减少动画模式支持 */
+@media (prefers-reduced-motion: reduce) {
+  .tb-super-menu,
+  .tb-menu-item,
+  .tb-submenu {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .tb-menu-item:active {
+    transform: none !important;
+  }
+}
+
+/* 菜单项图标动画 */
+.tb-menu-item:hover .tb-menu-icon {
+  animation: iconBounce 0.3s ease;
+}
+
+@keyframes iconBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* 子菜单箭头动画 */
+.tb-menu-item:hover .tb-menu-arrow {
+  transform: translateX(2px);
+}
+
+/* 菜单项加载动画 */
+.tb-menu-item {
+  animation: menuItemSlideIn 0.2s ease forwards;
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+.tb-menu-item:nth-child(1) { animation-delay: 0ms; }
+.tb-menu-item:nth-child(2) { animation-delay: 50ms; }
+.tb-menu-item:nth-child(3) { animation-delay: 100ms; }
+.tb-menu-item:nth-child(4) { animation-delay: 150ms; }
+.tb-menu-item:nth-child(5) { animation-delay: 200ms; }
+
+@keyframes menuItemSlideIn {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 上下文菜单项特殊样式 */
+.tb-menu-item.tb-context-action {
+  background: rgba(0, 123, 255, 0.05);
+  border-left: 3px solid #007bff;
+}
+
+.tb-menu-item.tb-context-action:hover {
+  background: rgba(0, 123, 255, 0.15);
+}
+
+/* 危险操作样式 */
+.tb-menu-item.tb-danger {
+  color: #dc3545;
+}
+
+.tb-menu-item.tb-danger:hover {
+  background: rgba(220, 53, 69, 0.1);
+}
+
+.tb-menu-item.tb-danger .tb-menu-label {
+  color: #dc3545;
+}
+
+/* 禁用状态 */
+.tb-menu-item.tb-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}

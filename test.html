@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TabletBrowse Pro 测试页面</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border-radius: 8px;
+        }
+        
+        .feature-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+        
+        .feature-title {
+            color: #007bff;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .test-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .small-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 15px 0;
+        }
+        
+        .small-link {
+            padding: 3px 6px;
+            background: #e9ecef;
+            color: #495057;
+            text-decoration: none;
+            font-size: 12px;
+            border-radius: 3px;
+        }
+        
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: white;
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 4px;
+            padding: 8px 0;
+        }
+        
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        
+        .dropdown-content a {
+            color: #333;
+            padding: 8px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        
+        .dropdown-content a:hover {
+            background: #f1f1f1;
+        }
+        
+        .article-content {
+            margin: 30px 0;
+            padding: 30px;
+            background: #fafafa;
+            border-radius: 6px;
+            line-height: 1.8;
+        }
+        
+        .sidebar {
+            float: right;
+            width: 200px;
+            margin: 0 0 20px 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-section {
+            margin: 20px 0;
+        }
+        
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .image-item {
+            text-align: center;
+        }
+        
+        .image-item img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 4px;
+            background: #ddd;
+        }
+        
+        .navigation {
+            background: #343a40;
+            padding: 10px 0;
+            margin: -30px -30px 30px -30px;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                float: none;
+                width: 100%;
+                margin: 20px 0;
+            }
+            
+            .test-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="navigation">
+            <div class="nav-links">
+                <a href="#home">首页</a>
+                <a href="#features">功能</a>
+                <a href="#about">关于</a>
+                <a href="#contact">联系</a>
+            </div>
+        </nav>
+        
+        <div class="header">
+            <h1>TabletBrowse Pro 测试页面</h1>
+            <p>测试平板浏览优化功能的各种交互元素</p>
+        </div>
+
+        <div class="feature-section">
+            <div class="feature-title">🎯 精准点击测试</div>
+            <p>以下是一些小尺寸的链接和按钮，可以测试精准点击功能：</p>
+            <div class="small-links">
+                <a href="#" class="small-link">小链接1</a>
+                <a href="#" class="small-link">小链接2</a>
+                <a href="#" class="small-link">小链接3</a>
+                <a href="#" class="small-link">小链接4</a>
+                <a href="#" class="small-link">小链接5</a>
+                <a href="#" class="small-link">小链接6</a>
+                <a href="#" class="small-link">小链接7</a>
+                <a href="#" class="small-link">小链接8</a>
+            </div>
+        </div>
+
+        <div class="feature-section">
+            <div class="feature-title">🖱️ 悬停模拟测试</div>
+            <p>长按以下元素测试悬停效果：</p>
+            <div class="test-buttons">
+                <div class="dropdown">
+                    <button class="btn btn-primary">下拉菜单</button>
+                    <div class="dropdown-content">
+                        <a href="#">选项 1</a>
+                        <a href="#">选项 2</a>
+                        <a href="#">选项 3</a>
+                    </div>
+                </div>
+                <button class="btn btn-secondary" title="这是一个工具提示">带提示的按钮</button>
+                <button class="btn btn-success" data-tooltip="自定义提示信息">自定义提示</button>
+            </div>
+        </div>
+
+        <div class="feature-section">
+            <div class="feature-title">📱 右键菜单测试</div>
+            <p>长按以下元素测试右键菜单功能：</p>
+            <div class="test-buttons">
+                <a href="https://www.example.com" class="btn btn-primary">测试链接</a>
+                <button class="btn btn-secondary" onclick="alert('按钮被点击')">可点击按钮</button>
+            </div>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuWbvueJhzE8L3RleHQ+PC9zdmc+" alt="测试图片1">
+                    <p>测试图片1</p>
+                </div>
+                <div class="image-item">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuWbvueJhzI8L3RleHQ+PC9zdmc+" alt="测试图片2">
+                    <p>测试图片2</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="feature-section">
+            <div class="feature-title">🎯 聚焦模式测试</div>
+            <div class="sidebar">
+                <h4>侧边栏内容</h4>
+                <p>这是一个侧边栏，在聚焦模式下应该被隐藏。</p>
+                <ul>
+                    <li>干扰项目1</li>
+                    <li>干扰项目2</li>
+                    <li>干扰项目3</li>
+                </ul>
+            </div>
+            <article class="article-content">
+                <h2>主要文章内容</h2>
+                <p>这是主要的文章内容区域。双击这个区域可以激活聚焦模式，隐藏周围的干扰元素，专注于阅读体验。</p>
+                <p>聚焦模式会自动识别主要内容区域，优化文本排版，提供更好的阅读体验。支持暗色主题和高对比度模式。</p>
+                <h3>子标题</h3>
+                <p>这里是更多的文章内容。在聚焦模式下，文本会被重新排版，字体大小和行间距会被优化，背景会变为纯色，提供更好的阅读体验。</p>
+                <blockquote>
+                    这是一个引用块，用来测试聚焦模式下的样式效果。
+                </blockquote>
+                <p>聚焦模式还支持调整聚焦区域，用户可以重新选择要聚焦的内容区域。</p>
+            </article>
+        </div>
+
+        <div class="feature-section">
+            <div class="feature-title">✨ 元素高亮测试</div>
+            <p>按住并移动手指，观察可交互元素的高亮效果：</p>
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="username">用户名：</label>
+                    <input type="text" id="username" class="form-control" placeholder="请输入用户名">
+                </div>
+                <div class="form-group">
+                    <label for="email">邮箱：</label>
+                    <input type="email" id="email" class="form-control" placeholder="请输入邮箱">
+                </div>
+                <div class="form-group">
+                    <label for="message">消息：</label>
+                    <textarea id="message" class="form-control" rows="3" placeholder="请输入消息内容"></textarea>
+                </div>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="option1">
+                        <label for="option1">选项1</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="option2">
+                        <label for="option2">选项2</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="option3">
+                        <label for="option3">选项3</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">提交表单</button>
+            </div>
+        </div>
+
+        <div class="feature-section">
+            <div class="feature-title">🌟 超级菜单测试</div>
+            <p>使用以下方式激活超级菜单：</p>
+            <ul>
+                <li>四指同时点击屏幕</li>
+                <li>Ctrl + 右键点击</li>
+                <li>Shift + F10 快捷键</li>
+            </ul>
+            <p>超级菜单会根据当前上下文显示相关的操作选项。</p>
+        </div>
+
+        <div class="feature-section">
+            <div class="feature-title">👋 手势导航测试</div>
+            <p>打开多个标签页，然后使用三指左滑或右滑来切换标签页。</p>
+            <p>手势识别会显示视觉反馈，确认手势被正确识别。</p>
+        </div>
+
+        <footer style="margin-top: 50px; padding: 20px; text-align: center; background: #f8f9fa; border-radius: 6px;">
+            <p>TabletBrowse Pro 测试页面 - 版本 1.0.0</p>
+            <p>请在平板设备上测试各项功能的效果</p>
+        </footer>
+    </div>
+
+    <script>
+        // 添加一些测试用的交互功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为按钮添加点击事件
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    if (!this.href && !this.type) {
+                        console.log('按钮被点击:', this.textContent);
+                    }
+                });
+            });
+
+            // 为小链接添加点击事件
+            document.querySelectorAll('.small-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('小链接被点击:', this.textContent);
+                });
+            });
+
+            // 添加一些动态内容
+            setTimeout(() => {
+                const newButton = document.createElement('button');
+                newButton.className = 'btn btn-success';
+                newButton.textContent = '动态添加的按钮';
+                newButton.style.marginTop = '10px';
+                document.querySelector('.test-buttons').appendChild(newButton);
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
