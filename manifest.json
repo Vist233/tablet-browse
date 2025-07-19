@@ -1,0 +1,78 @@
+{
+  "manifest_version": 3,
+  "name": "TabletBrowse Pro",
+  "version": "1.0.0",
+  "description": "专为平板优化的浏览器插件，提供悬停模拟、精准点击、手势导航等功能",
+  
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "storage",
+    "contextMenus",
+    "scripting"
+  ],
+  
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  
+  "background": {
+    "service_worker": "background/background.js"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "content/utils/constants.js",
+        "content/utils/helpers.js",
+        "content/core/touch-handler.js",
+        "content/core/gesture-detector.js",
+        "content/features/hover-simulator.js",
+        "content/features/context-menu.js",
+        "content/features/precision-click.js",
+        "content/features/focus-mode.js",
+        "content/features/element-highlighter.js",
+        "content/ui/super-menu.js",
+        "content/main.js"
+      ],
+      "css": [
+        "content/styles/main.css",
+        "content/styles/precision-click.css",
+        "content/styles/focus-mode.css",
+        "content/styles/super-menu.css",
+        "content/styles/highlighter.css"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "TabletBrowse Pro",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "content/styles/*.css",
+        "content/assets/*.png",
+        "content/assets/*.svg"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TabletBrowse Pro</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <header class="popup-header">
+      <h1>TabletBrowse Pro</h1>
+      <p class="subtitle">平板浏览优化插件</p>
+    </header>
+    
+    <main class="popup-main">
+      <div class="feature-toggle">
+        <label class="toggle-item">
+          <input type="checkbox" id="enablePlugin" checked>
+          <span class="toggle-slider"></span>
+          <span class="toggle-label">启用插件</span>
+        </label>
+      </div>
+      
+      <div class="features-list">
+        <div class="feature-item">
+          <label class="toggle-item">
+            <input type="checkbox" id="hoverSimulation" checked>
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">长按悬停模拟</span>
+          </label>
+          <p class="feature-desc">长按按钮模拟鼠标悬停效果</p>
+        </div>
+        
+        <div class="feature-item">
+          <label class="toggle-item">
+            <input type="checkbox" id="precisionClick" checked>
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">精准点击模式</span>
+          </label>
+          <p class="feature-desc">放大镜工具精确点击小元素</p>
+        </div>
+        
+        <div class="feature-item">
+          <label class="toggle-item">
+            <input type="checkbox" id="gestureNav" checked>
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">手势导航</span>
+          </label>
+          <p class="feature-desc">三指滑动切换标签页</p>
+        </div>
+        
+        <div class="feature-item">
+          <label class="toggle-item">
+            <input type="checkbox" id="focusMode" checked>
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">聚焦模式</span>
+          </label>
+          <p class="feature-desc">隐藏干扰元素专注阅读</p>
+        </div>
+        
+        <div class="feature-item">
+          <label class="toggle-item">
+            <input type="checkbox" id="elementHighlight" checked>
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">元素高亮</span>
+          </label>
+          <p class="feature-desc">自动高亮可交互元素</p>
+        </div>
+      </div>
+      
+      <div class="settings-section">
+        <h3>设置</h3>
+        <div class="setting-item">
+          <label for="hoverDelay">长按延迟 (毫秒)</label>
+          <input type="range" id="hoverDelay" min="300" max="1500" value="800" step="100">
+          <span class="setting-value">800ms</span>
+        </div>
+      </div>
+    </main>
+    
+    <footer class="popup-footer">
+      <button id="resetSettings" class="btn-secondary">重置设置</button>
+      <button id="saveSettings" class="btn-primary">保存设置</button>
+    </footer>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

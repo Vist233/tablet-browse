@@ -1,0 +1,143 @@
+/**
+ * TabletBrowse Pro - 主样式文件
+ */
+
+/* 基础样式重置 */
+.tablet-browse-active * {
+  box-sizing: border-box;
+}
+
+/* 通用动画 */
+@keyframes tbFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes tbFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes tbSlideIn {
+  from { transform: translateY(-10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes tbPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* 悬停模拟效果 */
+.tb-hover-simulated {
+  background-color: rgba(0, 123, 255, 0.1) !important;
+  border: 2px solid rgba(0, 123, 255, 0.3) !important;
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.2) !important;
+  transition: all 0.2s ease !important;
+}
+
+/* 元素高亮效果 */
+.tb-highlighted {
+  outline: 3px solid #007bff !important;
+  outline-offset: 2px !important;
+  background-color: rgba(0, 123, 255, 0.05) !important;
+  position: relative !important;
+  z-index: 9997 !important;
+  animation: tbPulse 0.3s ease-in-out !important;
+}
+
+.tb-highlighted::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  background: linear-gradient(45deg, transparent, rgba(0, 123, 255, 0.1), transparent);
+  border-radius: 4px;
+  z-index: -1;
+  animation: tbFadeIn 0.2s ease-in-out;
+}
+
+/* 长按反馈效果 */
+.tb-long-press-feedback {
+  position: relative;
+  overflow: visible !important;
+}
+
+.tb-long-press-feedback::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 123, 255, 0.3) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  animation: tbLongPressRipple 0.8s ease-out;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+@keyframes tbLongPressRipple {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    width: 100px;
+    height: 100px;
+    opacity: 0;
+  }
+}
+
+/* 禁用默认的触摸行为 */
+.tablet-browse-active {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 可交互元素的视觉提示 */
+.tb-interactive-hint {
+  position: relative;
+}
+
+.tb-interactive-hint::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: 1px dashed rgba(0, 123, 255, 0.3);
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.tb-interactive-hint:hover::before {
+  opacity: 1;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .tb-highlighted {
+    outline-width: 4px !important;
+    outline-offset: 3px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .tb-highlighted {
+    outline-width: 5px !important;
+    outline-offset: 4px !important;
+  }
+}
