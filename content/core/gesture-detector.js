@@ -220,10 +220,47 @@ class GestureDetector {
 
   switchTab(direction) {
     // 发送消息给background script执行标签页切换
-    chrome.runtime.sendMessage({
-      action: 'switchTab',
-      direction: direction
-    });
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+      chrome.runtime.sendMessage({
+        action: 'switchTab',
+        direction: direction
+      });
+    } else {
+      console.warn('TabletBrowse Pro: Tab switching not available outside extension environment');
+      // 在测试环境中显示提示
+      this.showTabSwitchFeedback(direction, false);
+    }
+  }
+
+  showTabSwitchFeedback(direction, success = true) {
+    const feedback = document.createElement('div');
+    feedback.className = 'tb-gesture-feedback';
+    feedback.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: ${success ? 'rgba(0, 200, 0, 0.9)' : 'rgba(255, 165, 0, 0.9)'};
+      color: white;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      z-index: ${Z_INDEX.SUPER_MENU + 1};
+      animation: gestureSuccess 1s ease-out forwards;
+      pointer-events: none;
+    `;
+
+    const directionText = direction === 'left' ? '上一个' : '下一个';
+    feedback.textContent = success ?
+      `切换到${directionText}标签页` :
+      `手势识别成功：${directionText}标签页（测试模式）`;
+
+    document.body.appendChild(feedback);
+
+    setTimeout(() => {
+      feedback.remove();
+    }, 1000);
   }
 
   showGestureIndicator() {

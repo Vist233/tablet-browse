@@ -102,7 +102,7 @@ class SuperMenuHandler {
         icon: '📄',
         submenu: [
           { id: 'select-all', label: '全选', icon: '📋', action: () => document.execCommand('selectAll') },
-          { id: 'copy', label: '复制', icon: '📄', action: () => document.execCommand('copy') },
+          { id: 'copy', label: '复制', icon: '📄', action: () => this.copySelectedText() },
           { id: 'find', label: '查找', icon: '🔍', action: () => this.showFindDialog() },
           { id: 'print', label: '打印', icon: '🖨️', action: () => window.print() },
           { id: 'share', label: '分享', icon: '📤', action: () => this.shareCurrentPage() }
@@ -475,7 +475,12 @@ class SuperMenuHandler {
   }
 
   openSettings() {
-    chrome.runtime.openOptionsPage?.();
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.openOptionsPage) {
+      chrome.runtime.openOptionsPage();
+    } else {
+      // 在测试环境中显示提示
+      this.showToast('设置功能仅在扩展环境中可用');
+    }
   }
 
   // 上下文操作方法
@@ -486,11 +491,17 @@ class SuperMenuHandler {
     }
   }
 
-  copyLink() {
+  async copyLink() {
     const link = this.currentContext?.element?.closest('a');
-    if (link) {
-      navigator.clipboard.writeText(link.href);
-      this.showToast('链接已复制');
+    if (link && link.href) {
+      const success = await copyToClipboard(link.href);
+      if (success) {
+        this.showToast('链接已复制');
+      } else {
+        this.showToast('复制失败，请重试');
+      }
+    } else {
+      this.showToast('未找到有效链接');
     }
   }
 
@@ -509,9 +520,18 @@ class SuperMenuHandler {
     this.showToast('图片复制功能需要浏览器支持');
   }
 
-  copySelectedText() {
-    document.execCommand('copy');
-    this.showToast('文本已复制');
+  async copySelectedText() {
+    const selectedText = getSelectedText();
+    if (selectedText) {
+      const success = await copyToClipboard(selectedText);
+      if (success) {
+        this.showToast('文本已复制');
+      } else {
+        this.showToast('复制失败，请重试');
+      }
+    } else {
+      this.showToast('请先选择要复制的文本');
+    }
   }
 
   pasteText() {

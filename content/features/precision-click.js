@@ -253,32 +253,123 @@ class PrecisionClickHandler {
 
   updateMagnifierContent(x, y) {
     if (!this.magnifierContent) return;
-    
-    // 计算要放大的区域
-    const sourceSize = this.magnifierSize / this.zoomLevel;
-    const sourceX = x - sourceSize / 2;
-    const sourceY = y - sourceSize / 2;
-    
-    // 克隆页面内容
-    const bodyClone = document.body.cloneNode(true);
-    
-    // 移除我们添加的UI元素
-    bodyClone.querySelectorAll('.tb-precision-overlay, .tb-magnifier, .tb-crosshair').forEach(el => el.remove());
-    
-    // 设置克隆内容的样式
-    bodyClone.style.cssText = `
+
+    // 使用Canvas截图方式替代DOM克隆（性能更好）
+    try {
+      // 计算要放大的区域
+      const sourceSize = this.magnifierSize / this.zoomLevel;
+      const sourceX = x - sourceSize / 2;
+      const sourceY = y - sourceSize / 2;
+
+      // 创建一个简化的视图
+      const viewportClone = this.createSimplifiedView(sourceX, sourceY, sourceSize);
+
+      // 清空并更新放大镜内容
+      this.magnifierContent.innerHTML = '';
+      this.magnifierContent.appendChild(viewportClone);
+
+    } catch (error) {
+      console.warn('Magnifier content update failed:', error);
+      // 降级到简单的放大效果
+      this.createSimpleMagnifier(x, y);
+    }
+  }
+
+  createSimplifiedView(sourceX, sourceY, sourceSize) {
+    // 创建一个简化的视图，只包含可见区域的元素
+    const container = document.createElement('div');
+    container.style.cssText = `
       position: absolute;
       left: ${-sourceX * this.zoomLevel}px;
       top: ${-sourceY * this.zoomLevel}px;
-      width: ${document.body.scrollWidth}px;
-      height: ${document.body.scrollHeight}px;
+      transform: scale(${this.zoomLevel});
       transform-origin: 0 0;
       pointer-events: none;
+      width: ${document.documentElement.scrollWidth}px;
+      height: ${document.documentElement.scrollHeight}px;
     `;
-    
-    // 清空并更新放大镜内容
-    this.magnifierContent.innerHTML = '';
-    this.magnifierContent.appendChild(bodyClone);
+
+    // 获取源区域内的元素
+    const elementsInRegion = document.elementsFromPoint(
+      sourceX + sourceSize / 2,
+      sourceY + sourceSize / 2
+    );
+
+    // 创建简化的DOM结构
+    elementsInRegion.slice(0, 10).forEach(element => {
+      if (element && !element.classList.contains('tb-precision-overlay') &&
+          !element.classList.contains('tb-magnifier') &&
+          !element.classList.contains('tb-crosshair')) {
+
+        const clone = this.createElementClone(element);
+        if (clone) {
+          container.appendChild(clone);
+        }
+      }
+    });
+
+    return container;
+  }
+
+  createElementClone(element) {
+    try {
+      const clone = element.cloneNode(false);
+      const rect = element.getBoundingClientRect();
+      const computedStyle = getComputedStyle(element);
+
+      // 复制关键样式
+      clone.style.cssText = `
+        position: absolute;
+        left: ${rect.left + window.scrollX}px;
+        top: ${rect.top + window.scrollY}px;
+        width: ${rect.width}px;
+        height: ${rect.height}px;
+        background: ${computedStyle.background};
+        color: ${computedStyle.color};
+        border: ${computedStyle.border};
+        font-size: ${computedStyle.fontSize};
+        font-family: ${computedStyle.fontFamily};
+        text-align: ${computedStyle.textAlign};
+        pointer-events: none;
+      `;
+
+      // 复制文本内容
+      if (element.textContent && element.children.length === 0) {
+        clone.textContent = element.textContent;
+      }
+
+      return clone;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  createSimpleMagnifier(x, y) {
+    // 简单的放大效果，显示坐标信息
+    this.magnifierContent.innerHTML = `
+      <div style="
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        font-size: 14px;
+        color: #333;
+        text-align: center;
+        line-height: 1.4;
+      ">
+        <div>
+          <div style="font-weight: bold;">精准点击模式</div>
+          <div style="font-size: 12px; margin-top: 5px;">
+            坐标: ${Math.round(x)}, ${Math.round(y)}
+          </div>
+          <div style="font-size: 11px; margin-top: 3px; color: #666;">
+            点击以精确选择
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   updateCrosshair(x, y) {

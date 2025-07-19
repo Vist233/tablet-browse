@@ -142,26 +142,29 @@ class HoverSimulator {
 
   endHoverSimulation(target) {
     if (!this.activeHovers.has(target)) return;
-    
+
     // 从活跃集合中移除
     this.activeHovers.delete(target);
-    
+
     // 移除悬停样式
     target.classList.remove(CSS_CLASSES.HOVER_SIMULATED);
-    
+
     // 触发鼠标离开事件
     simulateMouseEvent(target, 'mouseleave');
     simulateMouseEvent(target, 'mouseout');
-    
+
     // 清理定时器
     const timeout = this.hoverTimeouts.get(target);
     if (timeout) {
       clearTimeout(timeout);
       this.hoverTimeouts.delete(target);
     }
-    
+
     // 隐藏tooltip
     this.hideTooltip(target);
+
+    // 隐藏下拉菜单
+    this.hideDropdownMenu(target);
   }
 
   triggerHoverEvents(target, clientX, clientY) {
@@ -183,38 +186,80 @@ class HoverSimulator {
   }
 
   handleDropdownMenu(target) {
-    // 查找相关的下拉菜单
-    let dropdown = target.querySelector('.dropdown-menu');
-    
+    // 查找相关的下拉菜单 - 扩展搜索范围
+    let dropdown = null;
+
+    // 1. 查找子元素中的下拉菜单
+    dropdown = target.querySelector('.dropdown-menu, .dropdown-content, .submenu, [role="menu"]');
+
     if (!dropdown) {
-      // 查找兄弟元素中的下拉菜单
-      dropdown = target.parentElement?.querySelector('.dropdown-menu');
+      // 2. 查找兄弟元素中的下拉菜单
+      dropdown = target.parentElement?.querySelector('.dropdown-menu, .dropdown-content, .submenu, [role="menu"]');
     }
-    
+
     if (!dropdown) {
-      // 查找通过data属性关联的下拉菜单
-      const targetId = target.getAttribute('data-target') || target.getAttribute('aria-controls');
+      // 3. 查找通过data属性关联的下拉菜单
+      const targetId = target.getAttribute('data-target') ||
+                      target.getAttribute('aria-controls') ||
+                      target.getAttribute('data-dropdown');
       if (targetId) {
-        dropdown = document.getElementById(targetId);
+        dropdown = document.getElementById(targetId.replace('#', ''));
       }
     }
-    
+
+    if (!dropdown) {
+      // 4. 查找相邻的下拉菜单
+      let sibling = target.nextElementSibling;
+      while (sibling) {
+        if (sibling.matches('.dropdown-menu, .dropdown-content, .submenu, [role="menu"]')) {
+          dropdown = sibling;
+          break;
+        }
+        sibling = sibling.nextElementSibling;
+      }
+    }
+
     if (dropdown) {
+      // 保存原始样式
+      const originalDisplay = dropdown.style.display;
+      const originalVisibility = dropdown.style.visibility;
+      const originalOpacity = dropdown.style.opacity;
+
       // 显示下拉菜单
       dropdown.style.display = 'block';
       dropdown.style.visibility = 'visible';
       dropdown.style.opacity = '1';
       dropdown.classList.add('show');
-      
+
+      // 存储下拉菜单引用
+      target._tbDropdown = dropdown;
+      target._tbDropdownOriginalStyles = {
+        display: originalDisplay,
+        visibility: originalVisibility,
+        opacity: originalOpacity
+      };
+
       // 设置定时器自动隐藏
       setTimeout(() => {
         if (!this.activeHovers.has(target)) {
-          dropdown.style.display = '';
-          dropdown.style.visibility = '';
-          dropdown.style.opacity = '';
-          dropdown.classList.remove('show');
+          this.hideDropdownMenu(target);
         }
       }, 2500);
+    }
+  }
+
+  hideDropdownMenu(target) {
+    if (target._tbDropdown) {
+      const dropdown = target._tbDropdown;
+      const originalStyles = target._tbDropdownOriginalStyles;
+
+      dropdown.style.display = originalStyles.display;
+      dropdown.style.visibility = originalStyles.visibility;
+      dropdown.style.opacity = originalStyles.opacity;
+      dropdown.classList.remove('show');
+
+      delete target._tbDropdown;
+      delete target._tbDropdownOriginalStyles;
     }
   }
 

@@ -288,6 +288,23 @@
                 <button class="btn btn-secondary" title="这是一个工具提示">带提示的按钮</button>
                 <button class="btn btn-success" data-tooltip="自定义提示信息">自定义提示</button>
             </div>
+
+            <!-- 添加更多悬停测试元素 -->
+            <div style="margin-top: 20px;">
+                <div class="dropdown" style="display: inline-block; margin-right: 10px;">
+                    <span class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Bootstrap风格下拉</span>
+                    <div class="dropdown-menu" style="display: none;">
+                        <a class="dropdown-item" href="#">Action</a>
+                        <a class="dropdown-item" href="#">Another action</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#">Something else</a>
+                    </div>
+                </div>
+
+                <button class="btn btn-info" onmouseover="this.style.background='#17a2b8'" onmouseout="this.style.background='#138496'">
+                    JS悬停事件
+                </button>
+            </div>
         </div>
 
         <div class="feature-section">
@@ -376,6 +393,16 @@
                 <li>Shift + F10 快捷键</li>
             </ul>
             <p>超级菜单会根据当前上下文显示相关的操作选项。</p>
+
+            <!-- 添加复制功能测试 -->
+            <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px;">
+                <h4>复制功能测试</h4>
+                <p>选中这段文本，然后使用超级菜单或Ctrl+C复制。这是一段用于测试复制功能的示例文本，包含了足够的内容来验证复制是否正常工作。</p>
+                <p>
+                    <a href="https://www.example.com" target="_blank">测试链接</a> -
+                    右键或长按此链接测试链接复制功能
+                </p>
+            </div>
         </div>
 
         <div class="feature-section">
@@ -391,6 +418,14 @@
     </div>
 
     <script>
+        // 错误处理
+        window.addEventListener('error', function(e) {
+            console.error('Page Error:', e.error);
+            if (e.error && e.error.message && e.error.message.includes('Maximum call stack size exceeded')) {
+                console.error('Stack overflow detected - this may be due to recursive function calls');
+            }
+        });
+
         // 添加一些测试用的交互功能
         document.addEventListener('DOMContentLoaded', function() {
             // 为按钮添加点击事件

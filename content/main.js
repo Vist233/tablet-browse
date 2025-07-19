@@ -74,15 +74,7 @@ class TabletBrowseMain {
     } catch (error) {
       console.error('TabletBrowse Pro: Failed to load settings', error);
       // 使用默认设置
-      this.settings = {
-        enabled: true,
-        hoverSimulation: true,
-        precisionClickEnabled: true,
-        gestureNavEnabled: true,
-        focusModeEnabled: true,
-        highlightEnabled: true,
-        hoverDelay: 800
-      };
+      this.settings = getDefaultSettings();
     }
   }
 
@@ -98,28 +90,45 @@ class TabletBrowseMain {
       { name: 'elementHighlighter', class: ElementHighlighter }
     ];
 
+    let successCount = 0;
     for (const { name, class: ModuleClass } of moduleInitializers) {
       try {
         console.log(`TabletBrowse Pro: Initializing ${name}...`);
+
+        // 检查类是否存在
+        if (typeof ModuleClass !== 'function') {
+          throw new Error(`${name} class not found`);
+        }
+
         this.modules[name] = new ModuleClass();
-        
+
         // 设置全局引用
         window[`tabletBrowse${name.charAt(0).toUpperCase() + name.slice(1)}`] = this.modules[name];
-        
-        console.log(`TabletBrowse Pro: ${name} initialized`);
+
+        console.log(`TabletBrowse Pro: ${name} initialized successfully`);
+        successCount++;
       } catch (error) {
         console.error(`TabletBrowse Pro: Failed to initialize ${name}`, error);
+        // 继续初始化其他模块
       }
+    }
+
+    console.log(`TabletBrowse Pro: ${successCount}/${moduleInitializers.length} modules initialized`);
+
+    if (successCount === 0) {
+      throw new Error('No modules were successfully initialized');
     }
   }
 
   bindGlobalEvents() {
-    // 监听设置更新
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-      if (request.action === 'settingsUpdated') {
-        this.handleSettingsUpdate(request.settings);
-      }
-    });
+    // 监听设置更新（仅在扩展环境中）
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
+      chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        if (request.action === 'settingsUpdated') {
+          this.handleSettingsUpdate(request.settings);
+        }
+      });
+    }
 
     // 监听页面可见性变化
     document.addEventListener('visibilitychange', () => {

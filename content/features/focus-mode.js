@@ -74,11 +74,12 @@ class FocusModeHandler {
 
   isFocusableContent(element) {
     if (!element) return false;
-    
+
     // 检查常见的内容容器
     const contentSelectors = [
       'article',
       'main',
+      'section',
       '.content',
       '.post',
       '.article',
@@ -86,34 +87,49 @@ class FocusModeHandler {
       '.story',
       '.text',
       '.body',
+      '.article-content',
+      '.post-content',
       '[role="main"]',
       '[role="article"]'
     ];
-    
+
     // 检查元素本身或其父级是否匹配内容选择器
     let current = element;
     while (current && current !== document.body) {
-      if (contentSelectors.some(selector => current.matches && current.matches(selector))) {
+      if (current.matches && contentSelectors.some(selector => current.matches(selector))) {
         return true;
       }
       current = current.parentElement;
     }
-    
+
     // 检查元素是否包含大量文本内容
     const textContent = element.textContent || '';
-    if (textContent.length > 200) {
-      return true;
-    }
-    
-    // 检查是否为段落或标题
-    if (element.matches('p, h1, h2, h3, h4, h5, h6, div')) {
+    if (textContent.trim().length > 100) {
+      // 检查文本密度（文本长度与元素大小的比例）
       const rect = element.getBoundingClientRect();
-      // 检查元素大小是否合适
-      if (rect.width > 200 && rect.height > 100) {
+      if (rect.width > 0 && rect.height > 0) {
+        const textDensity = textContent.length / (rect.width * rect.height / 1000);
+        if (textDensity > 0.5) {
+          return true;
+        }
+      }
+    }
+
+    // 检查是否为段落或标题容器
+    if (element.matches('p, h1, h2, h3, h4, h5, h6, div, section')) {
+      const rect = element.getBoundingClientRect();
+      // 检查元素大小是否合适且包含足够文本
+      if (rect.width > 200 && rect.height > 50 && textContent.trim().length > 50) {
         return true;
       }
     }
-    
+
+    // 检查是否包含多个段落
+    const paragraphs = element.querySelectorAll('p');
+    if (paragraphs.length >= 2) {
+      return true;
+    }
+
     return false;
   }
 
@@ -150,28 +166,29 @@ class FocusModeHandler {
 
   deactivateFocusMode() {
     if (!this.isActive) return;
-    
+
     this.isActive = false;
-    
+
     // 移除聚焦模式类
     document.body.classList.remove(CSS_CLASSES.FOCUS_MODE);
-    
+
     // 恢复隐藏的元素
     this.restoreHiddenElements();
-    
+
     // 恢复聚焦元素的原始样式
     this.restoreFocusedElement();
-    
+
     // 清理UI
     this.cleanupUI();
-    
+
     // 触发聚焦模式事件
     document.dispatchEvent(createCustomEvent(EVENTS.FOCUS_MODE_TOGGLE, {
       active: false,
       focusedElement: null
     }));
-    
+
     this.focusedElement = null;
+    this.selectionMode = false;
   }
 
   findBestFocusTarget(element) {
@@ -241,37 +258,44 @@ class FocusModeHandler {
 
   hideDistractingElements() {
     const distractingSelectors = [
-      'header',
-      'nav',
-      'aside',
-      'footer',
-      '.sidebar',
-      '.menu',
-      '.navigation',
-      '.ads',
-      '.advertisement',
-      '.banner',
-      '.popup',
-      '.modal',
-      '.overlay',
-      '[role="banner"]',
-      '[role="navigation"]',
-      '[role="complementary"]'
+      'header:not(.tb-focused-content *)',
+      'nav:not(.tb-focused-content *)',
+      'aside:not(.tb-focused-content *)',
+      'footer:not(.tb-focused-content *)',
+      '.sidebar:not(.tb-focused-content *)',
+      '.menu:not(.tb-focused-content *)',
+      '.navigation:not(.tb-focused-content *)',
+      '.ads:not(.tb-focused-content *)',
+      '.advertisement:not(.tb-focused-content *)',
+      '.banner:not(.tb-focused-content *)',
+      '.popup:not(.tb-focused-content *)',
+      '.modal:not(.tb-focused-content *)',
+      '[role="banner"]:not(.tb-focused-content *)',
+      '[role="navigation"]:not(.tb-focused-content *)',
+      '[role="complementary"]:not(.tb-focused-content *)'
     ];
-    
+
     // 隐藏干扰元素
     distractingSelectors.forEach(selector => {
-      document.querySelectorAll(selector).forEach(element => {
-        if (!this.focusedElement.contains(element) && !element.contains(this.focusedElement)) {
-          this.hideElement(element);
-        }
-      });
+      try {
+        document.querySelectorAll(selector).forEach(element => {
+          if (!this.focusedElement.contains(element) &&
+              !element.contains(this.focusedElement) &&
+              !element.classList.contains('tb-focused-content')) {
+            this.hideElement(element);
+          }
+        });
+      } catch (e) {
+        // 忽略选择器错误
+      }
     });
-    
+
     // 隐藏与聚焦元素同级的其他元素
     if (this.focusedElement.parentElement) {
       Array.from(this.focusedElement.parentElement.children).forEach(sibling => {
-        if (sibling !== this.focusedElement && !sibling.contains(this.focusedElement)) {
+        if (sibling !== this.focusedElement &&
+            !sibling.contains(this.focusedElement) &&
+            !this.focusedElement.contains(sibling)) {
           // 检查是否为重要内容
           if (!this.isImportantContent(sibling)) {
             this.hideElement(sibling);
@@ -279,6 +303,36 @@ class FocusModeHandler {
         }
       });
     }
+
+    // 隐藏页面级别的干扰元素
+    this.hidePageLevelDistractions();
+  }
+
+  hidePageLevelDistractions() {
+    // 隐藏固定定位的干扰元素
+    const allElements = document.querySelectorAll('*');
+    allElements.forEach(element => {
+      if (element === this.focusedElement ||
+          this.focusedElement.contains(element) ||
+          element.contains(this.focusedElement)) {
+        return;
+      }
+
+      const style = getComputedStyle(element);
+      if (style.position === 'fixed' || style.position === 'sticky') {
+        // 检查是否为导航、广告等干扰元素
+        const classList = element.className.toLowerCase();
+        const id = element.id.toLowerCase();
+
+        if (classList.includes('nav') || classList.includes('menu') ||
+            classList.includes('header') || classList.includes('footer') ||
+            classList.includes('sidebar') || classList.includes('ad') ||
+            id.includes('nav') || id.includes('menu') ||
+            id.includes('header') || id.includes('footer')) {
+          this.hideElement(element);
+        }
+      }
+    });
   }
 
   isImportantContent(element) {

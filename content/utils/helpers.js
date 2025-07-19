@@ -120,14 +120,40 @@ function isClickableElement(element) {
 // 安全地获取设置
 async function getSettings() {
   try {
-    const response = await new Promise((resolve) => {
-      chrome.runtime.sendMessage({ action: 'getSettings' }, resolve);
+    // 检查是否在扩展环境中
+    if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.sendMessage) {
+      console.warn('TabletBrowse Pro: Not in extension environment, using default settings');
+      return getDefaultSettings();
+    }
+
+    const response = await new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage({ action: 'getSettings' }, (response) => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+        } else {
+          resolve(response);
+        }
+      });
     });
-    return response.success ? response.settings : {};
+
+    return response && response.success ? response.settings : getDefaultSettings();
   } catch (error) {
     console.error('Failed to get settings:', error);
-    return {};
+    return getDefaultSettings();
   }
+}
+
+// 获取默认设置
+function getDefaultSettings() {
+  return {
+    enabled: true,
+    hoverSimulation: true,
+    precisionClickEnabled: true,
+    gestureNavEnabled: true,
+    focusModeEnabled: true,
+    highlightEnabled: true,
+    hoverDelay: 800
+  };
 }
 
 // 添加CSS样式
@@ -136,4 +162,55 @@ function addStyles(css) {
   style.textContent = css;
   document.head.appendChild(style);
   return style;
+}
+
+// 复制文本到剪贴板（兼容性更好的方法）
+async function copyToClipboard(text) {
+  try {
+    // 优先使用现代API
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+
+    // 备用方法：创建临时输入框
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.cssText = `
+      position: fixed;
+      top: -1000px;
+      left: -1000px;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    `;
+
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textArea);
+
+    return successful;
+  } catch (error) {
+    console.error('Copy failed:', error);
+    return false;
+  }
+}
+
+// 获取选中的文本
+function getSelectedText() {
+  const selection = window.getSelection();
+  return selection.toString().trim();
+}
+
+// 选中指定元素的文本
+function selectElementText(element) {
+  const range = document.createRange();
+  range.selectNodeContents(element);
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
 }
