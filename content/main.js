@@ -118,6 +118,42 @@ class TabletBrowseMain {
     if (successCount === 0) {
       throw new Error('No modules were successfully initialized');
     }
+    
+    // 平板优化初始化
+    this.initializeTabletOptimizations();
+  }
+  
+  initializeTabletOptimizations() {
+    const env = window.TABLET_BROWSE_ENV;
+    if (!env?.isTablet?.isTablet) return;
+    
+    console.log('TabletBrowse Pro: Applying tablet optimizations...');
+    
+    // 优化触摸目标
+    setTimeout(() => {
+      optimizeTouchTargets();
+    }, 500);
+    
+    // 监听屏幕方向变化
+    if (window.screen && window.screen.orientation) {
+      window.screen.orientation.addEventListener('change', () => {
+        console.log('TabletBrowse Pro: Orientation changed to', getOrientation());
+        setTimeout(() => {
+          optimizeTouchTargets();
+        }, 100);
+      });
+    }
+    
+    // 监听窗口大小变化
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        optimizeTouchTargets();
+      }, 200);
+    });
+    
+    console.log('TabletBrowse Pro: Tablet optimizations applied');
   }
 
   bindGlobalEvents() {

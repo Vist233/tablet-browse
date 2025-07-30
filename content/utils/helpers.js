@@ -145,6 +145,8 @@ async function getSettings() {
 
 // 获取默认设置
 function getDefaultSettings() {
+  const isTabletDevice = window.TABLET_BROWSE_ENV?.isTablet?.isTablet || false;
+  
   return {
     enabled: true,
     hoverSimulation: true,
@@ -152,7 +154,15 @@ function getDefaultSettings() {
     gestureNavEnabled: true,
     focusModeEnabled: true,
     highlightEnabled: true,
-    hoverDelay: 800
+    // 平板优化设置
+    hoverDelay: isTabletDevice ? 600 : 800, // 平板使用更短的延迟
+    touchSensitivity: isTabletDevice ? 'high' : 'medium',
+    touchTargetSize: isTabletDevice ? 'large' : 'medium',
+    gestureThreshold: isTabletDevice ? 40 : 50,
+    enableTabletOptimizations: isTabletDevice,
+    // 性能优化
+    performanceMode: isTabletDevice ? 'optimized' : 'standard',
+    animationSpeed: isTabletDevice ? 'fast' : 'normal'
   };
 }
 
@@ -213,4 +223,47 @@ function selectElementText(element) {
   const selection = window.getSelection();
   selection.removeAllRanges();
   selection.addRange(range);
+}
+
+// 平板触摸目标优化
+function optimizeTouchTargets() {
+  const env = window.TABLET_BROWSE_ENV;
+  if (!env?.isTablet?.isTablet) return;
+  
+  const minTouchSize = TOUCH_CONSTANTS.TABLET_MIN_TOUCH_TARGET;
+  const smallTargets = document.querySelectorAll(SELECTORS.INTERACTIVE);
+  
+  smallTargets.forEach(target => {
+    const rect = target.getBoundingClientRect();
+    if (rect.width < minTouchSize || rect.height < minTouchSize) {
+      // 添加触摸优化类
+      target.classList.add('tb-touch-optimized');
+    }
+  });
+}
+
+// 检查元素是否需要精准点击辅助
+function needsPrecisionClick(element) {
+  const env = window.TABLET_BROWSE_ENV;
+  if (!env?.isTablet?.isTablet) return false;
+  
+  const rect = element.getBoundingClientRect();
+  const minSize = TOUCH_CONSTANTS.TABLET_MIN_TOUCH_TARGET;
+  
+  return (rect.width < minSize || rect.height < minSize) && 
+         element.matches(SELECTORS.CLICKABLE);
+}
+
+// 获取平板优化的设置
+function getTabletOptimizedDelay() {
+  const env = window.TABLET_BROWSE_ENV;
+  if (!env?.isTablet?.isTablet) return TOUCH_CONSTANTS.LONG_PRESS_DURATION;
+  
+  // 根据屏幕尺寸调整延迟
+  switch (env.screenSize) {
+    case 'small': return 500;  // 小平板，更快响应
+    case 'medium': return 600; // 中等平板
+    case 'large': return 650;  // 大平板
+    default: return 600;
+  }
 }

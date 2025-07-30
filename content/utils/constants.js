@@ -4,12 +4,16 @@
 
 // 触摸事件相关常量
 const TOUCH_CONSTANTS = {
-  LONG_PRESS_DURATION: 800,        // 长按持续时间 (ms)
+  LONG_PRESS_DURATION: 600,        // 长按持续时间 (ms) - 为平板优化，降低到600ms
   HOVER_SIMULATION_DELAY: 100,     // 悬停模拟延迟 (ms)
-  PRECISION_CLICK_THRESHOLD: 10,   // 精准点击阈值 (px)
-  GESTURE_MIN_DISTANCE: 50,        // 手势最小距离 (px)
+  PRECISION_CLICK_THRESHOLD: 15,   // 精准点击阈值 (px) - 为手指触摸增加到15px
+  GESTURE_MIN_DISTANCE: 40,        // 手势最小距离 (px) - 为平板优化，减少到40px
   THREE_FINGER_THRESHOLD: 3,       // 三指手势阈值
-  HIGHLIGHT_DEBOUNCE: 50           // 高亮防抖延迟 (ms)
+  HIGHLIGHT_DEBOUNCE: 30,          // 高亮防抖延迟 (ms) - 为平板性能优化
+  TABLET_MIN_TOUCH_TARGET: 44,     // 平板最小触摸目标尺寸 (px) - 遵循移动端设计规范
+  DOUBLE_TAP_DELAY: 300,           // 双击延迟 (ms) - 平板优化
+  TOUCH_TOLERANCE: 10,             // 触摸容差 (px) - 手指触摸的误差范围
+  SWIPE_VELOCITY_THRESHOLD: 0.5    // 滑动速度阈值 (px/ms) - 平板手势识别
 };
 
 // CSS 类名

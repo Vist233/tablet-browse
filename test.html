@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0, minimum-scale=0.5">
     <title>TabletBrowse Pro 测试页面</title>
     <style>
         body {
@@ -240,6 +240,29 @@
                 width: 100%;
             }
         }
+        
+        /* 模拟器动画 */
+        @keyframes slideInDown {
+            from {
+                transform: translateX(-50%) translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOutUp {
+            from {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(-50%) translateY(-20px);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -417,6 +440,27 @@
         </footer>
     </div>
 
+    <!-- Load Plugin Scripts for Testing -->
+    <script src="content/utils/environment.js"></script>
+    <script src="content/utils/constants.js"></script>
+    <script src="content/utils/helpers.js"></script>
+    <script src="content/core/touch-handler.js"></script>
+    <script src="content/core/gesture-detector.js"></script>
+    <script src="content/features/hover-simulator.js"></script>
+    <script src="content/features/context-menu.js"></script>
+    <script src="content/features/precision-click.js"></script>
+    <script src="content/features/focus-mode.js"></script>
+    <script src="content/features/element-highlighter.js"></script>
+    <script src="content/ui/super-menu.js"></script>
+    <script src="content/main.js"></script>
+
+    <!-- Load Plugin Styles -->
+    <link rel="stylesheet" href="content/styles/main.css">
+    <link rel="stylesheet" href="content/styles/precision-click.css">
+    <link rel="stylesheet" href="content/styles/focus-mode.css">
+    <link rel="stylesheet" href="content/styles/super-menu.css">
+    <link rel="stylesheet" href="content/styles/highlighter.css">
+
     <script>
         // 错误处理
         window.addEventListener('error', function(e) {
@@ -453,7 +497,156 @@
                 newButton.style.marginTop = '10px';
                 document.querySelector('.test-buttons').appendChild(newButton);
             }, 2000);
+
+            // 添加测试模式说明
+            setTimeout(() => {
+                if (window.TABLET_BROWSE_ENV && !window.TABLET_BROWSE_ENV.isExtension) {
+                    console.log('🧪 Test Mode: Plugin scripts loaded directly for testing');
+                    console.log('Plugin Status:', {
+                        environment: window.TABLET_BROWSE_ENV,
+                        adapter: !!window.TABLET_BROWSE_ADAPTER,
+                        main: !!window.tabletBrowseMain
+                    });
+                    
+                    // 添加平板模拟器控制面板
+                    addTabletSimulator();
+                }
+            }, 1000);
         });
+        
+        // 添加平板模拟器
+        function addTabletSimulator() {
+            const simulator = document.createElement('div');
+            simulator.id = 'tablet-simulator';
+            simulator.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: rgba(33, 37, 41, 0.95);
+                color: white;
+                padding: 15px;
+                border-radius: 8px;
+                font-size: 12px;
+                z-index: 10002;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                min-width: 200px;
+            `;
+            
+            simulator.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 10px;">📱 平板模拟器</div>
+                <button id="simulate-tablet" style="width: 100%; margin: 5px 0; padding: 8px; border: none; border-radius: 4px; background: #007bff; color: white; cursor: pointer;">
+                    模拟平板设备
+                </button>
+                <button id="simulate-desktop" style="width: 100%; margin: 5px 0; padding: 8px; border: none; border-radius: 4px; background: #6c757d; color: white; cursor: pointer;">
+                    恢复桌面模式
+                </button>
+                <div id="device-info" style="margin-top: 10px; font-size: 11px; opacity: 0.8;">
+                    当前: ${window.TABLET_BROWSE_ENV.isTablet.isTablet ? '平板' : '桌面'}
+                </div>
+            `;
+            
+            document.body.appendChild(simulator);
+            
+            // 绑定事件
+            document.getElementById('simulate-tablet').onclick = () => simulateTabletDevice();
+            document.getElementById('simulate-desktop').onclick = () => restoreDesktopMode();
+            
+            // 添加关闭按钮
+            const closeBtn = document.createElement('button');
+            closeBtn.innerHTML = '×';
+            closeBtn.style.cssText = `
+                position: absolute;
+                top: 5px;
+                right: 8px;
+                background: none;
+                border: none;
+                color: white;
+                cursor: pointer;
+                font-size: 16px;
+                padding: 0;
+                width: 20px;
+                height: 20px;
+            `;
+            closeBtn.onclick = () => simulator.remove();
+            simulator.appendChild(closeBtn);
+        }
+        
+        // 模拟平板设备
+        function simulateTabletDevice() {
+            // 修改环境检测结果
+            window.TABLET_BROWSE_ENV.isTablet = {
+                isTablet: true,
+                userAgent: false,
+                screenSize: true,
+                touchSupport: true,
+                orientationSupport: true,
+                diagonal: 900
+            };
+            window.TABLET_BROWSE_ENV.isTouchDevice = true;
+            window.TABLET_BROWSE_ENV.screenSize = 'medium';
+            
+            // 重新应用设置
+            const main = window.tabletBrowseMain;
+            if (main) {
+                main.initializeTabletOptimizations();
+                console.log('📱 平板模式已激活');
+                
+                // 显示通知
+                showSimulatorNotice('平板模式已激活', 'success');
+                
+                // 更新设备信息显示
+                const deviceInfo = document.getElementById('device-info');
+                if (deviceInfo) deviceInfo.textContent = '当前: 平板 (模拟)';
+            }
+        }
+        
+        // 恢复桌面模式
+        function restoreDesktopMode() {
+            // 恢复原始环境检测
+            window.TABLET_BROWSE_ENV.isTablet = {
+                isTablet: false,
+                userAgent: false,
+                screenSize: false,
+                touchSupport: false,
+                orientationSupport: true,
+                diagonal: 1468
+            };
+            window.TABLET_BROWSE_ENV.isTouchDevice = false;
+            window.TABLET_BROWSE_ENV.screenSize = 'large';
+            
+            console.log('🖥️ 桌面模式已恢复');
+            showSimulatorNotice('桌面模式已恢复', 'info');
+            
+            // 更新设备信息显示
+            const deviceInfo = document.getElementById('device-info');
+            if (deviceInfo) deviceInfo.textContent = '当前: 桌面';
+        }
+        
+        // 显示模拟器通知
+        function showSimulatorNotice(message, type) {
+            const notice = document.createElement('div');
+            notice.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                padding: 10px 20px;
+                border-radius: 6px;
+                color: white;
+                font-size: 14px;
+                z-index: 10003;
+                animation: slideInDown 0.3s ease-out;
+                background: ${type === 'success' ? '#28a745' : '#17a2b8'};
+            `;
+            notice.textContent = message;
+            
+            document.body.appendChild(notice);
+            
+            setTimeout(() => {
+                notice.style.animation = 'slideOutUp 0.3s ease-in';
+                setTimeout(() => notice.remove(), 300);
+            }, 2000);
+        }
     </script>
 </body>
 </html>
