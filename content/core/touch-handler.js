@@ -81,8 +81,13 @@ class TouchHandler {
       { x: touch.clientX, y: touch.clientY }
     );
 
+    // 使用平板优化的阈值
+    const threshold = window.TABLET_BROWSE_ENV?.isTablet?.isTablet ? 
+                     TOUCH_CONSTANTS.PRECISION_CLICK_THRESHOLD : 
+                     TOUCH_CONSTANTS.PRECISION_CLICK_THRESHOLD * 0.7;
+
     // 如果移动距离超过阈值，取消长按检测
-    if (distance > TOUCH_CONSTANTS.PRECISION_CLICK_THRESHOLD) {
+    if (distance > threshold) {
       this.cancelLongPress();
     }
 
@@ -131,11 +136,14 @@ class TouchHandler {
   startLongPressDetection(target, touch) {
     this.cancelLongPress();
     
+    // 使用平板优化的延迟时间
+    const delay = getTabletOptimizedDelay();
+    
     this.longPressTimer = setTimeout(() => {
       if (this.currentTouches.size > 0) {
         this.triggerLongPress(target, touch);
       }
-    }, this.settings.hoverDelay || TOUCH_CONSTANTS.LONG_PRESS_DURATION);
+    }, delay);
   }
 
   cancelLongPress() {
@@ -148,17 +156,23 @@ class TouchHandler {
   triggerLongPress(target, touch) {
     this.isLongPressing = true;
     
+    // 添加触觉反馈 (平板优化)
+    if (navigator.vibrate && window.TABLET_BROWSE_ENV?.isTablet?.isTablet) {
+      navigator.vibrate(40); // 平板适中的震动反馈
+    }
+    
     // 添加长按反馈效果
     target.classList.add('tb-long-press-feedback');
     setTimeout(() => {
       target.classList.remove('tb-long-press-feedback');
-    }, 800);
+    }, 600); // 平板优化：更短的反馈时间
 
     // 触发长按事件
     const longPressEvent = createCustomEvent(EVENTS.LONG_PRESS_START, {
       target: target,
       clientX: touch.clientX,
-      clientY: touch.clientY
+      clientY: touch.clientY,
+      isTablet: window.TABLET_BROWSE_ENV?.isTablet?.isTablet || false
     });
     
     document.dispatchEvent(longPressEvent);

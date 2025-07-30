@@ -9,7 +9,13 @@ function detectEnvironment() {
     isSecureContext: window.isSecureContext || false,
     hasClipboardAPI: !!(navigator.clipboard && navigator.clipboard.writeText),
     hasChromeRuntime: !!(typeof chrome !== 'undefined' && chrome.runtime),
-    isTestMode: window.location.protocol === 'file:' || window.location.hostname === 'localhost'
+    isTestMode: window.location.protocol === 'file:' || window.location.hostname === 'localhost',
+    // 平板设备检测
+    isTablet: detectTabletDevice(),
+    isTouchDevice: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+    screenSize: getScreenSizeCategory(),
+    devicePixelRatio: window.devicePixelRatio || 1,
+    orientation: getOrientation()
   };
   
   // 检测是否在扩展环境中
@@ -27,6 +33,54 @@ function detectEnvironment() {
   }
   
   return env;
+}
+
+// 检测平板设备
+function detectTabletDevice() {
+  const userAgent = navigator.userAgent.toLowerCase();
+  const screen = window.screen;
+  
+  // 检查用户代理字符串
+  const tabletKeywords = ['ipad', 'tablet', 'android', 'kindle', 'silk', 'gt-p', 'sm-t'];
+  const isTabletUA = tabletKeywords.some(keyword => userAgent.includes(keyword));
+  
+  // 检查屏幕尺寸 (平板通常在7-13英寸之间)
+  const screenDiagonal = Math.sqrt(Math.pow(screen.width, 2) + Math.pow(screen.height, 2)) / (window.devicePixelRatio || 1);
+  const isTabletSize = screenDiagonal >= 600 && screenDiagonal <= 1400; // 大概7-13英寸
+  
+  // 检查触摸支持
+  const hasTouchSupport = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  
+  // 检查设备方向支持
+  const hasOrientationSupport = 'orientation' in window || 'screen' in window && 'orientation' in window.screen;
+  
+  return {
+    isTablet: isTabletUA || (isTabletSize && hasTouchSupport),
+    userAgent: isTabletUA,
+    screenSize: isTabletSize,
+    touchSupport: hasTouchSupport,
+    orientationSupport: hasOrientationSupport,
+    diagonal: screenDiagonal
+  };
+}
+
+// 获取屏幕尺寸类别
+function getScreenSizeCategory() {
+  const width = Math.max(window.screen.width, window.screen.height);
+  const height = Math.min(window.screen.width, window.screen.height);
+  
+  if (width <= 768) return 'small'; // 小平板 (7-8英寸)
+  if (width <= 1024) return 'medium'; // 中等平板 (9-10英寸)
+  if (width <= 1366) return 'large'; // 大平板 (11-13英寸)
+  return 'xlarge'; // 超大平板
+}
+
+// 获取设备方向
+function getOrientation() {
+  if (window.screen && window.screen.orientation) {
+    return window.screen.orientation.type.includes('portrait') ? 'portrait' : 'landscape';
+  }
+  return window.innerWidth < window.innerHeight ? 'portrait' : 'landscape';
 }
 
 // 全局环境信息
@@ -146,6 +200,11 @@ class EnvironmentAdapter {
   showEnvironmentInfo() {
     const info = [
       `Environment: ${this.env.isExtension ? 'Extension' : 'Test Mode'}`,
+      `Device Type: ${this.env.isTablet.isTablet ? 'Tablet' : 'Desktop/Mobile'}`,
+      `Touch Support: ${this.env.isTouchDevice}`,
+      `Screen Size: ${this.env.screenSize} (${window.screen.width}x${window.screen.height})`,
+      `Orientation: ${this.env.orientation}`,
+      `Pixel Ratio: ${this.env.devicePixelRatio}`,
       `Secure Context: ${this.env.isSecureContext}`,
       `Clipboard API: ${this.env.hasClipboardAPI}`,
       `Chrome Runtime: ${this.env.hasChromeRuntime}`
@@ -156,11 +215,21 @@ class EnvironmentAdapter {
       info.push(`Manifest Version: ${this.env.manifest?.manifest_version}`);
     }
     
+    if (this.env.isTablet.isTablet) {
+      info.push(`Tablet Details: Screen ${this.env.isTablet.diagonal.toFixed(0)}px diagonal`);
+      info.push(`Tablet Features: UA=${this.env.isTablet.userAgent}, Size=${this.env.isTablet.screenSize}, Orientation=${this.env.isTablet.orientationSupport}`);
+    }
+    
     console.log('TabletBrowse Pro Environment Info:\n' + info.join('\n'));
     
     // 在测试模式下显示提示
     if (this.env.isTestMode && !this.env.isExtension) {
       this.showTestModeNotice();
+    }
+    
+    // 在平板设备上显示优化提示
+    if (this.env.isTablet.isTablet) {
+      this.showTabletOptimizationNotice();
     }
   }
   
@@ -224,6 +293,73 @@ class EnvironmentAdapter {
         setTimeout(() => notice.remove(), 500);
       }
     }, 10000);
+  }
+  
+  showTabletOptimizationNotice() {
+    // 创建平板优化提示
+    const notice = document.createElement('div');
+    notice.id = 'tb-tablet-notice';
+    notice.style.cssText = `
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: rgba(40, 167, 69, 0.9);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      z-index: 10001;
+      max-width: 280px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      border-left: 4px solid #28a745;
+    `;
+    
+    const deviceInfo = this.env.isTablet;
+    notice.innerHTML = `
+      <div style="font-weight: bold; margin-bottom: 6px;">📱 平板优化已启用</div>
+      <div style="font-size: 12px; margin-bottom: 4px;">
+        设备: ${this.env.screenSize} 屏幕 (${this.env.orientation})
+      </div>
+      <div style="font-size: 11px; opacity: 0.9;">
+        • 触摸延迟已优化 (600ms)<br>
+        • 手势识别已调整<br>
+        • 触摸目标已增大
+      </div>
+    `;
+    
+    // 添加关闭按钮
+    const closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '×';
+    closeBtn.style.cssText = `
+      position: absolute;
+      top: 6px;
+      right: 10px;
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      color: white;
+      padding: 0;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    `;
+    
+    closeBtn.onclick = () => notice.remove();
+    notice.appendChild(closeBtn);
+    
+    document.body.appendChild(notice);
+    
+    // 8秒后自动隐藏
+    setTimeout(() => {
+      if (notice.parentNode) {
+        notice.style.opacity = '0';
+        notice.style.transition = 'opacity 0.5s';
+        setTimeout(() => notice.remove(), 500);
+      }
+    }, 8000);
   }
 }
 
