@@ -3,42 +3,69 @@
  * 处理插件的后台逻辑，包括标签页管理、手势导航等
  */
 
+// 统一 Promise 封装（后台专用）
+const ChromeAPI = {
+  storageGet: (keys = null) => new Promise((resolve, reject) => {
+    try { chrome.storage.sync.get(keys, (res) => { const err = chrome.runtime?.lastError; if (err) reject(err); else resolve(res||{}); }); } catch (e) { reject(e); }
+  }),
+  storageSet: (items) => new Promise((resolve, reject) => {
+    try { chrome.storage.sync.set(items, () => { const err = chrome.runtime?.lastError; if (err) reject(err); else resolve(); }); } catch (e) { reject(e); }
+  }),
+  tabsQuery: (queryInfo = {}) => new Promise((resolve, reject) => {
+    try { chrome.tabs.query(queryInfo, (tabs) => { const err = chrome.runtime?.lastError; if (err) reject(err); else resolve(tabs||[]); }); } catch (e) { reject(e); }
+  }),
+  tabsUpdate: (tabId, updateProps) => new Promise((resolve, reject) => {
+    try { chrome.tabs.update(tabId, updateProps, (tab) => { const err = chrome.runtime?.lastError; if (err) reject(err); else resolve(tab); }); } catch (e) { reject(e); }
+  })
+};
+
 // 插件安装时的初始化
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener(async () => {
   console.log('TabletBrowse Pro installed');
-  
   // 初始化存储设置
-  chrome.storage.sync.set({
+  await ChromeAPI.storageSet({
     enabled: true,
     hoverDelay: 800,
-    precisionClickEnabled: true,
     gestureNavEnabled: true,
-    focusModeEnabled: true,
-    highlightEnabled: true
+    highlightEnabled: true,
+    preventDefaultContextMenu: false,
+    gestureThreshold: 40
   });
 });
 
-// 处理来自content script的消息
+// 处理来自 content script 的消息（统一 async/await）
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  switch (request.action) {
-    case 'switchTab':
-      handleTabSwitch(request.direction, sender.tab.id);
-      break;
-    case 'getSettings':
-      getSettings(sendResponse);
-      return true; // 保持消息通道开放
-    case 'updateSettings':
-      updateSettings(request.settings, sendResponse);
-      return true;
-    default:
-      console.log('Unknown action:', request.action);
-  }
+  (async () => {
+    try {
+      switch (request.action) {
+        case 'switchTab':
+          await handleTabSwitch(request.direction, sender.tab?.id);
+          sendResponse({ success: true });
+          break;
+        case 'getSettings': {
+          const settings = await ChromeAPI.storageGet();
+          sendResponse({ success: true, settings });
+          break;
+        }
+        case 'updateSettings':
+          await ChromeAPI.storageSet(request.settings || {});
+          sendResponse({ success: true });
+          break;
+        default:
+          console.log('Unknown action:', request.action);
+          sendResponse({ success: false, error: 'Unknown action' });
+      }
+    } catch (error) {
+      sendResponse({ success: false, error: error?.message || String(error) });
+    }
+  })();
+  return true; // 保持消息通道开放直到 async 完成
 });
 
 // 处理标签页切换
 async function handleTabSwitch(direction, currentTabId) {
   try {
-    const tabs = await chrome.tabs.query({ currentWindow: true });
+    const tabs = await ChromeAPI.tabsQuery({ currentWindow: true });
     const currentIndex = tabs.findIndex(tab => tab.id === currentTabId);
     
     if (currentIndex === -1) return;
@@ -50,7 +77,7 @@ async function handleTabSwitch(direction, currentTabId) {
       targetIndex = currentIndex < tabs.length - 1 ? currentIndex + 1 : 0;
     }
     
-    await chrome.tabs.update(tabs[targetIndex].id, { active: true });
+    await ChromeAPI.tabsUpdate(tabs[targetIndex].id, { active: true });
   } catch (error) {
     console.error('Tab switch error:', error);
   }
@@ -59,7 +86,7 @@ async function handleTabSwitch(direction, currentTabId) {
 // 获取设置
 async function getSettings(sendResponse) {
   try {
-    const settings = await chrome.storage.sync.get();
+    const settings = await ChromeAPI.storageGet();
     sendResponse({ success: true, settings });
   } catch (error) {
     sendResponse({ success: false, error: error.message });
@@ -69,7 +96,7 @@ async function getSettings(sendResponse) {
 // 更新设置
 async function updateSettings(newSettings, sendResponse) {
   try {
-    await chrome.storage.sync.set(newSettings);
+    await ChromeAPI.storageSet(newSettings);
     sendResponse({ success: true });
   } catch (error) {
     sendResponse({ success: false, error: error.message });

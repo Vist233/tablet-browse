@@ -7,11 +7,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const elements = {
     enablePlugin: document.getElementById('enablePlugin'),
     hoverSimulation: document.getElementById('hoverSimulation'),
-    precisionClick: document.getElementById('precisionClick'),
     gestureNav: document.getElementById('gestureNav'),
-    focusMode: document.getElementById('focusMode'),
     elementHighlight: document.getElementById('elementHighlight'),
     hoverDelay: document.getElementById('hoverDelay'),
+    gestureThreshold: document.getElementById('gestureThreshold'),
+    blockContextMenu: document.getElementById('blockContextMenu'),
     resetSettings: document.getElementById('resetSettings'),
     saveSettings: document.getElementById('saveSettings')
   };
@@ -25,17 +25,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 加载设置
   async function loadSettings() {
     try {
-      const result = await chrome.storage.sync.get();
+      const result = await window.ChromeAPI.storageGet();
       
       elements.enablePlugin.checked = result.enabled !== false;
       elements.hoverSimulation.checked = result.hoverSimulation !== false;
-      elements.precisionClick.checked = result.precisionClickEnabled !== false;
+      // 精准点击模式已移除
       elements.gestureNav.checked = result.gestureNavEnabled !== false;
-      elements.focusMode.checked = result.focusModeEnabled !== false;
+      // 聚焦模式已移除
       elements.elementHighlight.checked = result.highlightEnabled !== false;
       elements.hoverDelay.value = result.hoverDelay || 800;
+      elements.gestureThreshold.value = (typeof result.gestureThreshold === 'number') ? result.gestureThreshold : 40;
+      elements.blockContextMenu.checked = !!result.preventDefaultContextMenu;
       
-      updateDelayDisplay();
+      updateHoverDelayDisplay();
+      updateGestureThresholdDisplay();
     } catch (error) {
       console.error('Failed to load settings:', error);
     }
@@ -47,25 +50,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       const settings = {
         enabled: elements.enablePlugin.checked,
         hoverSimulation: elements.hoverSimulation.checked,
-        precisionClickEnabled: elements.precisionClick.checked,
+        // 精准点击模式已移除
         gestureNavEnabled: elements.gestureNav.checked,
-        focusModeEnabled: elements.focusMode.checked,
+        // 聚焦模式已移除
         highlightEnabled: elements.elementHighlight.checked,
-        hoverDelay: parseInt(elements.hoverDelay.value)
+        hoverDelay: parseInt(elements.hoverDelay.value),
+        gestureThreshold: parseInt(elements.gestureThreshold.value),
+        preventDefaultContextMenu: elements.blockContextMenu.checked
       };
 
-      await chrome.storage.sync.set(settings);
+      await window.ChromeAPI.storageSet(settings);
       
       // 通知所有标签页设置已更新
-      const tabs = await chrome.tabs.query({});
-      tabs.forEach(tab => {
-        chrome.tabs.sendMessage(tab.id, {
-          action: 'settingsUpdated',
-          settings
-        }).catch(() => {
-          // 忽略无法发送消息的标签页
-        });
-      });
+      const tabs = await window.ChromeAPI.tabsQuery({});
+      await Promise.all(tabs.map(tab => window.ChromeAPI.tabsSendMessage(tab.id, { action: 'settingsUpdated', settings }).catch(() => {})));
 
       // 显示保存成功提示
       showNotification('设置已保存');
@@ -81,14 +79,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       const defaultSettings = {
         enabled: true,
         hoverSimulation: true,
-        precisionClickEnabled: true,
+        // 精准点击模式已移除
         gestureNavEnabled: true,
-        focusModeEnabled: true,
         highlightEnabled: true,
-        hoverDelay: 800
+        hoverDelay: 800,
+        gestureThreshold: 40,
+        preventDefaultContextMenu: false
       };
 
-      await chrome.storage.sync.set(defaultSettings);
+      await window.ChromeAPI.storageSet(defaultSettings);
       await loadSettings();
       
       showNotification('设置已重置');
@@ -98,12 +97,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // 更新延迟显示
-  function updateDelayDisplay() {
-    const valueSpan = document.querySelector('.setting-value');
-    if (valueSpan) {
-      valueSpan.textContent = elements.hoverDelay.value + 'ms';
-    }
+  // 更新显示
+  function updateHoverDelayDisplay() {
+    const span = document.getElementById('hoverDelayValue');
+    if (span) span.textContent = elements.hoverDelay.value + 'ms';
+  }
+
+  function updateGestureThresholdDisplay() {
+    const span = document.getElementById('gestureThresholdValue');
+    if (span) span.textContent = elements.gestureThreshold.value + 'px';
   }
 
   // 显示通知
@@ -139,18 +141,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 重置按钮
     elements.resetSettings.addEventListener('click', resetSettings);
     
-    // 延迟滑块
-    elements.hoverDelay.addEventListener('input', updateDelayDisplay);
+    // 滑块显示更新
+    elements.hoverDelay.addEventListener('input', updateHoverDelayDisplay);
+    elements.gestureThreshold.addEventListener('input', updateGestureThresholdDisplay);
     
-    // 自动保存开关状态
-    Object.values(elements).forEach(element => {
-      if (element.type === 'checkbox') {
-        element.addEventListener('change', () => {
-          // 延迟保存，避免频繁操作
-          clearTimeout(window.autoSaveTimeout);
-          window.autoSaveTimeout = setTimeout(saveSettings, 500);
-        });
-      }
+    // 自动保存（checkbox/range）
+    const autoSaveTargets = [
+      elements.enablePlugin,
+      elements.hoverSimulation,
+      
+      elements.gestureNav,
+      elements.elementHighlight,
+      elements.blockContextMenu,
+      elements.hoverDelay,
+      elements.gestureThreshold
+    ];
+    autoSaveTargets.forEach(element => {
+      if (!element) return;
+      const eventName = element.type === 'range' ? 'change' : 'change';
+      element.addEventListener(eventName, () => {
+        clearTimeout(window.autoSaveTimeout);
+        window.autoSaveTimeout = setTimeout(saveSettings, 500);
+      });
     });
   }
 });

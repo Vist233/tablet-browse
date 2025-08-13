@@ -113,8 +113,6 @@ class SuperMenuHandler {
         label: '平板功能',
         icon: '📱',
         submenu: [
-          { id: 'precision-click', label: '精准点击', icon: '🎯', action: () => this.activatePrecisionClick() },
-          { id: 'focus-mode', label: '聚焦模式', icon: '🎯', action: () => this.activateFocusMode() },
           { id: 'gesture-help', label: '手势帮助', icon: '👋', action: () => this.showGestureHelp() },
           { id: 'settings', label: '插件设置', icon: '⚙️', action: () => this.openSettings() }
         ]
@@ -165,14 +163,14 @@ class SuperMenuHandler {
   createMenu(x, y) {
     this.menu = document.createElement('div');
     this.menu.className = 'tb-super-menu';
+    const reduced = this.shouldUseReducedEffects();
     this.menu.style.cssText = `
       position: fixed;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, ${reduced ? '1' : '0.95'});
+      ${reduced ? '' : 'backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);'}
+      border: 1px solid rgba(0, 0, 0, 0.08);
       border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      box-shadow: ${reduced ? '0 4px 12px rgba(0,0,0,0.12)' : '0 8px 24px rgba(0,0,0,0.18)'};
       z-index: ${Z_INDEX.SUPER_MENU};
       min-width: 200px;
       max-width: 300px;
@@ -180,8 +178,9 @@ class SuperMenuHandler {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-size: 14px;
       opacity: 0;
-      transform: scale(0.8) translateY(-10px);
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: translateZ(0) scale(0.92) translateY(-6px);
+      transition: transform 0.16s ease, opacity 0.16s ease;
+      will-change: transform, opacity;
       pointer-events: auto;
     `;
     
@@ -190,20 +189,20 @@ class SuperMenuHandler {
 
   populateMenu() {
     if (!this.menu) return;
-    
+    const frag = document.createDocumentFragment();
     // 添加上下文相关的快速操作
-    this.addContextualActions();
-    
+    this.addContextualActionsTo(frag);
     // 添加分隔线
-    this.addSeparator();
-    
+    this.addSeparatorTo(frag);
     // 添加主要菜单项
     this.menuItems.forEach(item => {
-      this.addMenuItem(item);
+      const el = this.createMenuItemElement(item);
+      frag.appendChild(el);
     });
+    this.menu.appendChild(frag);
   }
 
-  addContextualActions() {
+  addContextualActionsTo(container) {
     if (!this.currentContext) return;
     
     const contextActions = [];
@@ -238,11 +237,12 @@ class SuperMenuHandler {
     
     // 添加上下文操作到菜单
     contextActions.forEach(action => {
-      this.addSimpleMenuItem(action);
+      const el = this.createSimpleMenuItemElement(action);
+      container.appendChild(el);
     });
   }
 
-  addMenuItem(item) {
+  createMenuItemElement(item) {
     const menuItem = document.createElement('div');
     menuItem.className = 'tb-menu-item';
     
@@ -261,13 +261,13 @@ class SuperMenuHandler {
       });
     } else {
       // 普通菜单项
-      this.addSimpleMenuItem(item, menuItem);
+      const simple = this.createSimpleMenuItemElement(item, menuItem);
+      return simple;
     }
-    
-    this.menu.appendChild(menuItem);
+    return menuItem;
   }
 
-  addSimpleMenuItem(item, element = null) {
+  createSimpleMenuItemElement(item, element = null) {
     const menuItem = element || document.createElement('div');
     menuItem.className = 'tb-menu-item';
     menuItem.innerHTML = `
@@ -283,10 +283,7 @@ class SuperMenuHandler {
       }
       this.hideSuperMenu();
     });
-    
-    if (!element) {
-      this.menu.appendChild(menuItem);
-    }
+    return menuItem;
   }
 
   showSubmenu(parentItem, parentElement) {
@@ -298,22 +295,25 @@ class SuperMenuHandler {
     
     const submenu = document.createElement('div');
     submenu.className = 'tb-submenu';
+    const reduced = this.shouldUseReducedEffects();
     submenu.style.cssText = `
       position: absolute;
       left: 100%;
       top: 0;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, ${reduced ? '1' : '0.95'});
+      ${reduced ? '' : 'backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);'}
+      border: 1px solid rgba(0, 0, 0, 0.08);
       border-radius: 8px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      box-shadow: ${reduced ? '0 3px 10px rgba(0,0,0,0.12)' : '0 6px 16px rgba(0,0,0,0.15)'};
       min-width: 180px;
       padding: 4px;
       margin-left: 4px;
-      animation: tbSlideIn 0.2s ease;
+      transform: translateZ(0);
+      will-change: transform, opacity;
+      animation: tbSlideIn 0.16s ease;
     `;
     
+    const frag = document.createDocumentFragment();
     parentItem.submenu.forEach(subItem => {
       const subMenuItem = document.createElement('div');
       subMenuItem.className = 'tb-menu-item tb-submenu-item';
@@ -323,22 +323,19 @@ class SuperMenuHandler {
           <span class="tb-menu-label">${subItem.label}</span>
         </div>
       `;
-      
       subMenuItem.addEventListener('click', () => {
-        if (subItem.action) {
-          subItem.action();
-        }
+        if (subItem.action) subItem.action();
         this.hideSuperMenu();
       });
-      
-      submenu.appendChild(subMenuItem);
+      frag.appendChild(subMenuItem);
     });
+    submenu.appendChild(frag);
     
     parentElement.style.position = 'relative';
     parentElement.appendChild(submenu);
     
-    // 调整子菜单位置，确保不超出视口
-    this.adjustSubmenuPosition(submenu, parentElement);
+    // 调整子菜单位置，确保不超出视口（下一帧测量，避免同步强制重排）
+    requestAnimationFrame(() => this.adjustSubmenuPosition(submenu, parentElement));
   }
 
   adjustSubmenuPosition(submenu, parentElement) {
@@ -358,7 +355,7 @@ class SuperMenuHandler {
     }
   }
 
-  addSeparator() {
+  addSeparatorTo(container) {
     const separator = document.createElement('div');
     separator.className = 'tb-menu-separator';
     separator.style.cssText = `
@@ -366,7 +363,7 @@ class SuperMenuHandler {
       background: rgba(0, 0, 0, 0.1);
       margin: 4px 8px;
     `;
-    this.menu.appendChild(separator);
+    container.appendChild(separator);
   }
 
   positionMenu(x, y) {
@@ -385,6 +382,17 @@ class SuperMenuHandler {
     
     this.menu.style.left = menuX + 'px';
     this.menu.style.top = menuY + 'px';
+  }
+
+  shouldUseReducedEffects() {
+    // 使用设置或环境判断，优先使用优化模式
+    // 当 settings.performanceMode === 'optimized' 或设备为平板时，减少开销效果
+    try {
+      if (this.settings && this.settings.performanceMode === 'optimized') return true;
+      const env = window.TABLET_BROWSE_ENV;
+      if (env && env.isTablet && env.isTablet.isTablet) return true;
+    } catch (_) {}
+    return false;
   }
 
   analyzeContext(element) {
@@ -439,25 +447,9 @@ class SuperMenuHandler {
     }
   }
 
-  activatePrecisionClick() {
-    if (window.tabletBrowsePrecisionClickHandler) {
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-      window.tabletBrowsePrecisionClickHandler.activatePrecisionMode(centerX, centerY);
-    }
-  }
+  // 精准点击模式已移除
 
-  activateFocusMode() {
-    if (window.tabletBrowseFocusModeHandler) {
-      // 尝试找到主要内容区域
-      const mainContent = document.querySelector('main, article, .content, .post, .article');
-      if (mainContent) {
-        window.tabletBrowseFocusModeHandler.activateFocusMode(mainContent);
-      } else {
-        this.showToast('未找到合适的内容区域');
-      }
-    }
-  }
+  // 聚焦模式已移除
 
   showGestureHelp() {
     const helpText = `
@@ -465,7 +457,6 @@ class SuperMenuHandler {
 
 • 长按：模拟悬停效果
 • 长按链接：显示右键菜单
-• 双击内容：激活聚焦模式
 • 三指滑动：切换标签页
 • 四指点击：显示超级菜单
 • Ctrl+右键：显示超级菜单
@@ -475,7 +466,11 @@ class SuperMenuHandler {
   }
 
   openSettings() {
-    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.openOptionsPage) {
+    if (window.ChromeAPI && window.ChromeAPI.openOptionsPage) {
+      window.ChromeAPI.openOptionsPage().catch(() => {
+        this.showToast('设置功能仅在扩展环境中可用');
+      });
+    } else if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.openOptionsPage) {
       chrome.runtime.openOptionsPage();
     } else {
       // 在测试环境中显示提示

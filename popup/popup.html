@@ -22,24 +22,15 @@
         </label>
       </div>
       
-      <div class="features-list">
-        <div class="feature-item">
-          <label class="toggle-item">
-            <input type="checkbox" id="hoverSimulation" checked>
-            <span class="toggle-slider"></span>
-            <span class="toggle-label">长按悬停模拟</span>
-          </label>
-          <p class="feature-desc">长按按钮模拟鼠标悬停效果</p>
-        </div>
-        
-        <div class="feature-item">
-          <label class="toggle-item">
-            <input type="checkbox" id="precisionClick" checked>
-            <span class="toggle-slider"></span>
-            <span class="toggle-label">精准点击模式</span>
-          </label>
-          <p class="feature-desc">放大镜工具精确点击小元素</p>
-        </div>
+        <div class="features-list">
+          <div class="feature-item">
+            <label class="toggle-item">
+              <input type="checkbox" id="hoverSimulation" checked>
+              <span class="toggle-slider"></span>
+              <span class="toggle-label">长按悬停模拟</span>
+            </label>
+            <p class="feature-desc">长按按钮模拟鼠标悬停效果</p>
+          </div>
         
         <div class="feature-item">
           <label class="toggle-item">
@@ -50,14 +41,7 @@
           <p class="feature-desc">三指滑动切换标签页</p>
         </div>
         
-        <div class="feature-item">
-          <label class="toggle-item">
-            <input type="checkbox" id="focusMode" checked>
-            <span class="toggle-slider"></span>
-            <span class="toggle-label">聚焦模式</span>
-          </label>
-          <p class="feature-desc">隐藏干扰元素专注阅读</p>
-        </div>
+        
         
         <div class="feature-item">
           <label class="toggle-item">
@@ -74,7 +58,22 @@
         <div class="setting-item">
           <label for="hoverDelay">长按延迟 (毫秒)</label>
           <input type="range" id="hoverDelay" min="300" max="1500" value="800" step="100">
-          <span class="setting-value">800ms</span>
+          <span id="hoverDelayValue" class="setting-value">800ms</span>
+        </div>
+
+        <div class="setting-item">
+          <label for="gestureThreshold">手势阈值 (像素)</label>
+          <input type="range" id="gestureThreshold" min="20" max="120" value="40" step="5">
+          <span id="gestureThresholdValue" class="setting-value">40px</span>
+        </div>
+
+        <div class="feature-item" style="margin-top: 8px;">
+          <label class="toggle-item">
+            <input type="checkbox" id="blockContextMenu">
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">阻止网页右键菜单</span>
+          </label>
+          <p class="feature-desc">启用后，页面右键菜单默认被屏蔽，仅使用插件功能</p>
         </div>
       </div>
     </main>
@@ -84,7 +83,7 @@
       <button id="saveSettings" class="btn-primary">保存设置</button>
     </footer>
   </div>
-  
+  <script src="../content/utils/chrome-helpers.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

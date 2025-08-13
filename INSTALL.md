@@ -49,8 +49,7 @@
 
 ### 基本功能测试
 - **长按测试**: 长按按钮或链接，观察悬停效果
-- **精准点击**: 双击小元素，激活放大镜模式
-- **聚焦模式**: 双击文章内容，进入聚焦阅读
+- （精准点击与聚焦模式已移除）
 - **手势导航**: 三指滑动切换标签页
 - **超级菜单**: 四指点击或Ctrl+右键显示菜单
 - **元素高亮**: 按住移动手指，观察高亮效果
@@ -105,13 +104,7 @@ console.log('Modules:', {
 });
 ```
 
-#### 3. 手动触发功能
-```javascript
-// 手动激活精准点击模式
-if (window.tabletBrowsePrecisionClickHandler) {
-  window.tabletBrowsePrecisionClickHandler.activatePrecisionMode(100, 100);
-}
-```
+<!-- 精准点击/聚焦相关的手动触发示例已移除 -->
 
 ## 高级配置
 

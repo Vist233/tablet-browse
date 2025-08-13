@@ -50,53 +50,21 @@
 3. 等待菜单自动隐藏
 4. 测试不同类型的下拉菜单结构
 
-### 3. 聚焦模式不能使用问题 ✅ 已修复
+### 3. 聚焦模式变更
 
-**问题描述**: 聚焦模式无法激活或工作不正常
+为简化扩展与提升稳定性，聚焦模式已移除：
+- 不再加载 `content/features/focus-mode.js`
+- 移除相关样式与 UI 控件（Popup 开关、超级菜单项）
+- 文档与快捷键已同步更新（双击默认用于精准点击）
 
-**修复内容**:
-- 改进了内容区域识别算法
-- 增加了文本密度检测
-- 优化了干扰元素隐藏逻辑
-- 添加了页面级别干扰元素的处理
-- 修复了元素选择和状态管理问题
-- 改进了聚焦区域的判断条件
+### 4. 精准点击模式变更
 
-**修改的文件**:
-- `content/features/focus-mode.js` - 重写了 `isFocusableContent`, `hideDistractingElements` 等方法
+为简化与保持轻量，精准点击（放大镜）功能已移除：
+- 不再加载 `content/features/precision-click.js`
+- 移除相关样式与 Popup 开关
+- 文档已同步更新
 
-**改进的识别条件**:
-- 支持更多内容容器选择器
-- 基于文本密度的智能识别
-- 多段落内容的自动识别
-- 更准确的元素大小和内容比例判断
-
-**测试方法**:
-1. 双击文章内容区域
-2. 观察是否进入聚焦模式
-3. 检查干扰元素是否被隐藏
-4. 测试控制面板功能
-5. 使用ESC键退出聚焦模式
-
-### 4. 精准点击模式优化 ✅ 已改进
-
-**问题描述**: 放大镜内容显示性能问题
-
-**修复内容**:
-- 重写了放大镜内容生成逻辑
-- 使用简化的DOM结构替代完整克隆
-- 添加了性能优化和错误处理
-- 提供了降级的简单显示模式
-- 改进了元素克隆和样式复制
-
-**修改的文件**:
-- `content/features/precision-click.js` - 重写了 `updateMagnifierContent` 方法
-
-**性能优化**:
-- 避免完整的DOM克隆
-- 只处理可见区域的元素
-- 简化的样式复制
-- 错误时的降级处理
+<!-- 精准点击已移除，因此不再包含对应文件修改与优化条目 -->
 
 ## 额外改进
 
@@ -140,17 +108,8 @@ console.log('Plugin status:', window.tabletBrowseMain);
 console.log('Modules:', {
   touchHandler: window.tabletBrowseTouchHandler,
   hoverSimulator: window.tabletBrowseHoverSimulator,
-  focusModeHandler: window.tabletBrowseFocusModeHandler,
-  // ... 其他模块
+  // ... 其他模块（聚焦与精准点击已移除）
 });
-
-// 手动激活聚焦模式
-if (window.tabletBrowseFocusModeHandler) {
-  const article = document.querySelector('article, .content, main');
-  if (article) {
-    window.tabletBrowseFocusModeHandler.activateFocusMode(article);
-  }
-}
 
 // 手动测试复制功能
 copyToClipboard('测试文本').then(success => {

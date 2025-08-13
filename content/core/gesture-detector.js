@@ -10,7 +10,7 @@ class GestureDetector {
     this.gestureStartTime = 0;
     this.gestureStartPositions = [];
     this.isGestureActive = false;
-    this.gestureThreshold = 50; // 最小手势距离
+    this.gestureThreshold = (typeof TOUCH_CONSTANTS !== 'undefined' && TOUCH_CONSTANTS.GESTURE_MIN_DISTANCE) ? TOUCH_CONSTANTS.GESTURE_MIN_DISTANCE : 50; // 最小手势距离（按常量）
     this.maxGestureTime = 1000; // 最大手势时间 (ms)
     this.threeFingerThreshold = 3;
     
@@ -19,6 +19,9 @@ class GestureDetector {
 
   async init() {
     this.settings = await getSettings();
+    if (this.settings && typeof this.settings.gestureThreshold === 'number') {
+      this.gestureThreshold = this.settings.gestureThreshold;
+    }
     this.bindEvents();
   }
 
@@ -32,6 +35,11 @@ class GestureDetector {
     // 设置更新监听
     document.addEventListener('settingsUpdated', (event) => {
       this.settings = event.detail.settings;
+      if (this.settings && typeof this.settings.gestureThreshold === 'number') {
+        this.gestureThreshold = this.settings.gestureThreshold;
+      } else if (typeof TOUCH_CONSTANTS !== 'undefined') {
+        this.gestureThreshold = TOUCH_CONSTANTS.GESTURE_MIN_DISTANCE;
+      }
     });
   }
 
@@ -219,15 +227,18 @@ class GestureDetector {
   }
 
   switchTab(direction) {
-    // 发送消息给background script执行标签页切换
-    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
-      chrome.runtime.sendMessage({
-        action: 'switchTab',
-        direction: direction
-      });
+    // 发送消息给 background 执行标签页切换（统一封装）
+    if (window.ChromeAPI && window.ChromeAPI.runtimeSendMessage) {
+      window.ChromeAPI.runtimeSendMessage({ action: 'switchTab', direction })
+        .catch(() => this.showTabSwitchFeedback(direction, false));
+    } else if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+      try {
+        chrome.runtime.sendMessage({ action: 'switchTab', direction });
+      } catch (_) {
+        this.showTabSwitchFeedback(direction, false);
+      }
     } else {
       console.warn('TabletBrowse Pro: Tab switching not available outside extension environment');
-      // 在测试环境中显示提示
       this.showTabSwitchFeedback(direction, false);
     }
   }

@@ -5,15 +5,8 @@
   "description": "专为平板优化的浏览器插件，提供悬停模拟、精准点击、手势导航等功能",
   
   "permissions": [
-    "activeTab",
     "tabs",
-    "storage",
-    "contextMenus",
-    "scripting"
-  ],
-  
-  "host_permissions": [
-    "<all_urls>"
+    "storage"
   ],
   
   "background": {
@@ -24,6 +17,7 @@
     {
       "matches": ["<all_urls>"],
       "js": [
+        "content/utils/chrome-helpers.js",
         "content/utils/environment.js",
         "content/utils/constants.js",
         "content/utils/helpers.js",
@@ -31,16 +25,12 @@
         "content/core/gesture-detector.js",
         "content/features/hover-simulator.js",
         "content/features/context-menu.js",
-        "content/features/precision-click.js",
-        "content/features/focus-mode.js",
         "content/features/element-highlighter.js",
         "content/ui/super-menu.js",
         "content/main.js"
       ],
       "css": [
         "content/styles/main.css",
-        "content/styles/precision-click.css",
-        "content/styles/focus-mode.css",
         "content/styles/super-menu.css",
         "content/styles/highlighter.css"
       ],

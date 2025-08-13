@@ -117,26 +117,13 @@ function isClickableElement(element) {
          element.style.cursor === 'pointer';
 }
 
-// 安全地获取设置
+// 安全地获取设置（统一走 ChromeAPI 存储）
 async function getSettings() {
   try {
-    // 检查是否在扩展环境中
-    if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.sendMessage) {
-      console.warn('TabletBrowse Pro: Not in extension environment, using default settings');
-      return getDefaultSettings();
-    }
-
-    const response = await new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage({ action: 'getSettings' }, (response) => {
-        if (chrome.runtime.lastError) {
-          reject(new Error(chrome.runtime.lastError.message));
-        } else {
-          resolve(response);
-        }
-      });
-    });
-
-    return response && response.success ? response.settings : getDefaultSettings();
+    const defaults = getDefaultSettings();
+    const raw = await (window.ChromeAPI?.storageGet ? window.ChromeAPI.storageGet() : Promise.resolve({}));
+    // 合并默认值，确保缺省项存在
+    return { ...defaults, ...(raw || {}) };
   } catch (error) {
     console.error('Failed to get settings:', error);
     return getDefaultSettings();
@@ -150,15 +137,14 @@ function getDefaultSettings() {
   return {
     enabled: true,
     hoverSimulation: true,
-    precisionClickEnabled: true,
     gestureNavEnabled: true,
-    focusModeEnabled: true,
     highlightEnabled: true,
+    preventDefaultContextMenu: false,
+    gestureThreshold: TOUCH_CONSTANTS?.GESTURE_MIN_DISTANCE || 50,
     // 平板优化设置
     hoverDelay: isTabletDevice ? 600 : 800, // 平板使用更短的延迟
     touchSensitivity: isTabletDevice ? 'high' : 'medium',
     touchTargetSize: isTabletDevice ? 'large' : 'medium',
-    gestureThreshold: isTabletDevice ? 40 : 50,
     enableTabletOptimizations: isTabletDevice,
     // 性能优化
     performanceMode: isTabletDevice ? 'optimized' : 'standard',

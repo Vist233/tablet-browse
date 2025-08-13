@@ -84,8 +84,6 @@ class TabletBrowseMain {
       { name: 'gestureDetector', class: GestureDetector },
       { name: 'hoverSimulator', class: HoverSimulator },
       { name: 'contextMenuHandler', class: ContextMenuHandler },
-      { name: 'precisionClickHandler', class: PrecisionClickHandler },
-      { name: 'focusModeHandler', class: FocusModeHandler },
       { name: 'superMenuHandler', class: SuperMenuHandler },
       { name: 'elementHighlighter', class: ElementHighlighter }
     ];
@@ -241,41 +239,14 @@ class TabletBrowseMain {
     document.addEventListener(EVENTS.GESTURE_DETECTED, (event) => {
       const { type } = event.detail;
       
-      // 确保手势不会与其他功能冲突
-      if (this.modules.precisionClickHandler?.isActive) {
-        this.modules.precisionClickHandler.deactivatePrecisionMode();
-      }
+      // 已移除精准点击模式
       
-      if (this.modules.focusModeHandler?.isActive) {
-        // 在聚焦模式下禁用某些手势
-        if (type === GESTURES.THREE_FINGER_SWIPE_LEFT || type === GESTURES.THREE_FINGER_SWIPE_RIGHT) {
-          event.preventDefault();
-          return;
-        }
-      }
+      // 聚焦模式已移除，无需特殊处理
     });
 
-    // 精准模式与其他功能的协调
-    document.addEventListener(EVENTS.PRECISION_MODE_TOGGLE, (event) => {
-      const { active } = event.detail;
-      
-      if (active) {
-        // 激活精准模式时，暂停其他功能
-        this.modules.elementHighlighter?.clearAllHighlights();
-        this.modules.superMenuHandler?.hideSuperMenu();
-      }
-    });
+    // 精准点击模式已移除
 
-    // 聚焦模式与其他功能的协调
-    document.addEventListener(EVENTS.FOCUS_MODE_TOGGLE, (event) => {
-      const { active } = event.detail;
-      
-      if (active) {
-        // 激活聚焦模式时，清理其他UI
-        this.modules.superMenuHandler?.hideSuperMenu();
-        this.modules.precisionClickHandler?.deactivatePrecisionMode();
-      }
-    });
+    // 聚焦模式已移除
   }
 
   handleSettingsUpdate(newSettings) {
@@ -320,10 +291,7 @@ class TabletBrowseMain {
       this.modules.elementHighlighter.refreshHighlights?.();
     }
     
-    if (this.modules.focusModeHandler?.isActive) {
-      // 刷新聚焦模式
-      this.modules.focusModeHandler.refreshFocusMode?.();
-    }
+    // 聚焦模式已移除
   }
 
   enable() {
