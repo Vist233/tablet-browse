@@ -107,16 +107,6 @@ function getParents(element) {
   return parents;
 }
 
-// 检查元素是否为可点击元素
-function isClickableElement(element) {
-  if (!element || !element.matches) return false;
-  
-  return element.matches(SELECTORS.CLICKABLE) ||
-         element.onclick ||
-         element.getAttribute('role') === 'button' ||
-         element.style.cursor === 'pointer';
-}
-
 // 安全地获取设置（统一走 ChromeAPI 存储）
 async function getSettings() {
   try {
@@ -132,23 +122,9 @@ async function getSettings() {
 
 // 获取默认设置
 function getDefaultSettings() {
-  const isTabletDevice = window.TABLET_BROWSE_ENV?.isTablet?.isTablet || false;
-  
   return {
     enabled: true,
-    hoverSimulation: true,
-    gestureNavEnabled: true,
-    highlightEnabled: true,
-    preventDefaultContextMenu: false,
-    gestureThreshold: TOUCH_CONSTANTS?.GESTURE_MIN_DISTANCE || 50,
-    // 平板优化设置
-    hoverDelay: isTabletDevice ? 600 : 800, // 平板使用更短的延迟
-    touchSensitivity: isTabletDevice ? 'high' : 'medium',
-    touchTargetSize: isTabletDevice ? 'large' : 'medium',
-    enableTabletOptimizations: isTabletDevice,
-    // 性能优化
-    performanceMode: isTabletDevice ? 'optimized' : 'standard',
-    animationSpeed: isTabletDevice ? 'fast' : 'normal'
+    highlightEnabled: true
   };
 }
 
@@ -160,96 +136,8 @@ function addStyles(css) {
   return style;
 }
 
-// 复制文本到剪贴板（兼容性更好的方法）
-async function copyToClipboard(text) {
-  try {
-    // 优先使用现代API
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(text);
-      return true;
-    }
-
-    // 备用方法：创建临时输入框
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.cssText = `
-      position: fixed;
-      top: -1000px;
-      left: -1000px;
-      width: 1px;
-      height: 1px;
-      opacity: 0;
-      pointer-events: none;
-    `;
-
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-
-    const successful = document.execCommand('copy');
-    document.body.removeChild(textArea);
-
-    return successful;
-  } catch (error) {
-    console.error('Copy failed:', error);
-    return false;
-  }
-}
-
 // 获取选中的文本
 function getSelectedText() {
   const selection = window.getSelection();
   return selection.toString().trim();
-}
-
-// 选中指定元素的文本
-function selectElementText(element) {
-  const range = document.createRange();
-  range.selectNodeContents(element);
-  const selection = window.getSelection();
-  selection.removeAllRanges();
-  selection.addRange(range);
-}
-
-// 平板触摸目标优化
-function optimizeTouchTargets() {
-  const env = window.TABLET_BROWSE_ENV;
-  if (!env?.isTablet?.isTablet) return;
-  
-  const minTouchSize = TOUCH_CONSTANTS.TABLET_MIN_TOUCH_TARGET;
-  const smallTargets = document.querySelectorAll(SELECTORS.INTERACTIVE);
-  
-  smallTargets.forEach(target => {
-    const rect = target.getBoundingClientRect();
-    if (rect.width < minTouchSize || rect.height < minTouchSize) {
-      // 添加触摸优化类
-      target.classList.add('tb-touch-optimized');
-    }
-  });
-}
-
-// 检查元素是否需要精准点击辅助
-function needsPrecisionClick(element) {
-  const env = window.TABLET_BROWSE_ENV;
-  if (!env?.isTablet?.isTablet) return false;
-  
-  const rect = element.getBoundingClientRect();
-  const minSize = TOUCH_CONSTANTS.TABLET_MIN_TOUCH_TARGET;
-  
-  return (rect.width < minSize || rect.height < minSize) && 
-         element.matches(SELECTORS.CLICKABLE);
-}
-
-// 获取平板优化的设置
-function getTabletOptimizedDelay() {
-  const env = window.TABLET_BROWSE_ENV;
-  if (!env?.isTablet?.isTablet) return TOUCH_CONSTANTS.LONG_PRESS_DURATION;
-  
-  // 根据屏幕尺寸调整延迟
-  switch (env.screenSize) {
-    case 'small': return 500;  // 小平板，更快响应
-    case 'medium': return 600; // 中等平板
-    case 'large': return 650;  // 大平板
-    default: return 600;
-  }
 }

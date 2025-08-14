@@ -50,15 +50,15 @@ class TabletBrowseMain {
       // 绑定全局事件
       this.bindGlobalEvents();
       
-      // 设置模块间通信
-      this.setupModuleCommunication();
+      // 应用滚动条增强
+      this.applyScrollbarEnhancements();
       
       this.isInitialized = true;
       console.log('TabletBrowse Pro: Initialization complete');
       
       // 触发初始化完成事件
       document.dispatchEvent(createCustomEvent('tb-initialized', {
-        version: '1.0.0',
+        version: '1.1.0',
         modules: Object.keys(this.modules)
       }));
       
@@ -80,11 +80,6 @@ class TabletBrowseMain {
 
   async initializeModules() {
     const moduleInitializers = [
-      { name: 'touchHandler', class: TouchHandler },
-      { name: 'gestureDetector', class: GestureDetector },
-      { name: 'hoverSimulator', class: HoverSimulator },
-      { name: 'contextMenuHandler', class: ContextMenuHandler },
-      { name: 'superMenuHandler', class: SuperMenuHandler },
       { name: 'elementHighlighter', class: ElementHighlighter }
     ];
 
@@ -116,43 +111,9 @@ class TabletBrowseMain {
     if (successCount === 0) {
       throw new Error('No modules were successfully initialized');
     }
-    
-    // 平板优化初始化
-    this.initializeTabletOptimizations();
   }
   
-  initializeTabletOptimizations() {
-    const env = window.TABLET_BROWSE_ENV;
-    if (!env?.isTablet?.isTablet) return;
-    
-    console.log('TabletBrowse Pro: Applying tablet optimizations...');
-    
-    // 优化触摸目标
-    setTimeout(() => {
-      optimizeTouchTargets();
-    }, 500);
-    
-    // 监听屏幕方向变化
-    if (window.screen && window.screen.orientation) {
-      window.screen.orientation.addEventListener('change', () => {
-        console.log('TabletBrowse Pro: Orientation changed to', getOrientation());
-        setTimeout(() => {
-          optimizeTouchTargets();
-        }, 100);
-      });
-    }
-    
-    // 监听窗口大小变化
-    let resizeTimeout;
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
-        optimizeTouchTargets();
-      }, 200);
-    });
-    
-    console.log('TabletBrowse Pro: Tablet optimizations applied');
-  }
+  
 
   bindGlobalEvents() {
     // 监听设置更新（仅在扩展环境中）
@@ -211,43 +172,47 @@ class TabletBrowseMain {
     });
   }
 
-  setupModuleCommunication() {
-    // 设置模块间的事件通信
+  applyScrollbarEnhancements() {
+    // 添加滚动条增强CSS
+    const scrollbarCSS = `
+      /* 为所有可滚动元素添加自定义滚动条样式 */
+      * {
+        /* 检查元素是否可滚动 */
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+      }
+      
+      /* Webkit浏览器的滚动条样式 */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      
+      ::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.3);
+        border-radius: 4px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+      }
+      
+      ::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+      
+      ::-webkit-scrollbar-corner {
+        background: transparent;
+      }
+    `;
     
-    // 长按事件协调
-    document.addEventListener(EVENTS.LONG_PRESS_START, (event) => {
-      const { target } = event.detail;
-      
-      // 根据目标元素类型决定优先级
-      if (this.modules.contextMenuHandler?.shouldShowContextMenu(target)) {
-        // 优先显示右键菜单
-        return;
-      }
-      
-      if (this.modules.hoverSimulator?.shouldSimulateHover(target)) {
-        // 其次是悬停模拟
-        return;
-      }
-      
-      if (this.modules.precisionClickHandler?.shouldActivatePrecisionMode(target)) {
-        // 最后是精准点击模式
-        return;
-      }
-    });
-
-    // 手势事件协调
-    document.addEventListener(EVENTS.GESTURE_DETECTED, (event) => {
-      const { type } = event.detail;
-      
-      // 已移除精准点击模式
-      
-      // 聚焦模式已移除，无需特殊处理
-    });
-
-    // 精准点击模式已移除
-
-    // 聚焦模式已移除
+    addStyles(scrollbarCSS);
+    console.log('TabletBrowse Pro: Scrollbar enhancements applied');
   }
+
+  
 
   handleSettingsUpdate(newSettings) {
     console.log('TabletBrowse Pro: Settings updated', newSettings);
@@ -290,8 +255,6 @@ class TabletBrowseMain {
       // 刷新高亮系统
       this.modules.elementHighlighter.refreshHighlights?.();
     }
-    
-    // 聚焦模式已移除
   }
 
   enable() {
@@ -356,7 +319,7 @@ class TabletBrowseMain {
   }
 
   getVersion() {
-    return '1.0.0';
+    return '1.1.0';
   }
 }
 

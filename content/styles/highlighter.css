@@ -2,44 +2,14 @@
  * TabletBrowse Pro - 元素高亮样式
  */
 
-/* 高亮涟漪效果 */
-@keyframes highlightRipple {
-  0% {
-    transform: scale(0);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(2);
-    opacity: 0;
-  }
-}
-
-.tb-highlight-ripple {
-  animation-fill-mode: forwards;
-}
-
-/* 高亮脉冲边框效果 */
-@keyframes highlightPulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-    border-color: #007bff;
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.02);
-    border-color: #0056b3;
-  }
-}
-
-.tb-highlight-border {
-  box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
-}
-
 /* 高亮元素基础样式 */
 .tb-highlighted {
   position: relative;
   z-index: 9997;
+  outline: 3px solid #007bff;
+  outline-offset: 2px;
+  background-color: rgba(0, 123, 255, 0.05);
+  border-radius: 4px;
   transition: all 0.2s ease;
 }
 
@@ -57,143 +27,7 @@
     rgba(0, 123, 255, 0.1) 100%);
   border-radius: 6px;
   z-index: -1;
-  animation: highlightGlow 2s ease-in-out infinite;
   pointer-events: none;
-}
-
-@keyframes highlightGlow {
-  0%, 100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(1.01);
-  }
-}
-
-/* 不同类型元素的特殊高亮效果 */
-.tb-highlighted[href] {
-  /* 链接元素 */
-  outline: 2px solid #007bff;
-  outline-offset: 2px;
-  background-color: rgba(0, 123, 255, 0.05);
-}
-
-.tb-highlighted[href]::before {
-  background: linear-gradient(45deg, 
-    rgba(0, 123, 255, 0.15) 0%, 
-    rgba(0, 123, 255, 0.08) 50%, 
-    rgba(0, 123, 255, 0.15) 100%);
-}
-
-.tb-highlighted button,
-.tb-highlighted input[type="button"],
-.tb-highlighted input[type="submit"] {
-  /* 按钮元素 */
-  outline: 2px solid #28a745;
-  outline-offset: 2px;
-  background-color: rgba(40, 167, 69, 0.05);
-}
-
-.tb-highlighted button::before,
-.tb-highlighted input[type="button"]::before,
-.tb-highlighted input[type="submit"]::before {
-  background: linear-gradient(45deg, 
-    rgba(40, 167, 69, 0.15) 0%, 
-    rgba(40, 167, 69, 0.08) 50%, 
-    rgba(40, 167, 69, 0.15) 100%);
-}
-
-.tb-highlighted input,
-.tb-highlighted textarea,
-.tb-highlighted select {
-  /* 输入元素 */
-  outline: 2px solid #ffc107;
-  outline-offset: 2px;
-  background-color: rgba(255, 193, 7, 0.05);
-}
-
-.tb-highlighted input::before,
-.tb-highlighted textarea::before,
-.tb-highlighted select::before {
-  background: linear-gradient(45deg, 
-    rgba(255, 193, 7, 0.15) 0%, 
-    rgba(255, 193, 7, 0.08) 50%, 
-    rgba(255, 193, 7, 0.15) 100%);
-}
-
-/* 小元素的特殊处理 */
-.tb-highlighted[data-small="true"] {
-  outline-width: 3px;
-  outline-offset: 3px;
-  transform: scale(1.05);
-}
-
-.tb-highlighted[data-small="true"]::before {
-  top: -5px;
-  left: -5px;
-  right: -5px;
-  bottom: -5px;
-}
-
-/* 高亮强度等级 */
-.tb-highlighted.tb-highlight-weak {
-  outline-width: 1px;
-  outline-offset: 1px;
-}
-
-.tb-highlighted.tb-highlight-weak::before {
-  opacity: 0.2;
-}
-
-.tb-highlighted.tb-highlight-strong {
-  outline-width: 3px;
-  outline-offset: 3px;
-  box-shadow: 0 0 15px rgba(0, 123, 255, 0.4);
-}
-
-.tb-highlighted.tb-highlight-strong::before {
-  opacity: 0.8;
-  animation-duration: 1s;
-}
-
-/* 触摸轨迹效果 */
-.tb-touch-trail {
-  position: fixed;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 123, 255, 0.6) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 9998;
-  animation: trailFade 0.5s ease-out forwards;
-}
-
-@keyframes trailFade {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.5);
-  }
-}
-
-/* 高亮计数器 */
-.tb-highlight-counter {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  background: rgba(0, 123, 255, 0.9);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: bold;
-  z-index: 10000;
-  animation: tbFadeIn 0.2s ease;
 }
 
 /* 暗色主题支持 */
@@ -209,15 +43,6 @@
       rgba(77, 171, 247, 0.08) 50%, 
       rgba(77, 171, 247, 0.15) 100%);
   }
-  
-  .tb-highlight-border {
-    border-color: #4dabf7;
-    box-shadow: 0 0 10px rgba(77, 171, 247, 0.4);
-  }
-  
-  .tb-highlight-counter {
-    background: rgba(77, 171, 247, 0.9);
-  }
 }
 
 /* 高对比度模式支持 */
@@ -231,11 +56,6 @@
   .tb-highlighted::before {
     background: #ffff00;
     opacity: 0.3;
-  }
-  
-  .tb-highlight-border {
-    border: 3px solid #000;
-    box-shadow: none;
   }
 }
 
@@ -252,10 +72,6 @@
     right: -4px;
     bottom: -4px;
   }
-  
-  .tb-highlight-border {
-    border-width: 3px;
-  }
 }
 
 @media (max-width: 480px) {
@@ -270,42 +86,20 @@
     right: -5px;
     bottom: -5px;
   }
-  
-  .tb-highlight-border {
-    border-width: 4px;
-  }
-  
-  .tb-highlight-counter {
-    top: 5px;
-    right: 5px;
-    font-size: 11px;
-  }
 }
 
 /* 减少动画模式支持 */
 @media (prefers-reduced-motion: reduce) {
   .tb-highlighted,
-  .tb-highlighted::before,
-  .tb-highlight-border,
-  .tb-highlight-ripple,
-  .tb-touch-trail {
-    animation: none !important;
+  .tb-highlighted::before {
     transition: none !important;
-  }
-  
-  .tb-highlighted[data-small="true"] {
-    transform: none !important;
   }
 }
 
 /* 打印时隐藏高亮效果 */
 @media print {
   .tb-highlighted,
-  .tb-highlighted::before,
-  .tb-highlight-border,
-  .tb-highlight-ripple,
-  .tb-touch-trail,
-  .tb-highlight-counter {
+  .tb-highlighted::before {
     display: none !important;
   }
 }

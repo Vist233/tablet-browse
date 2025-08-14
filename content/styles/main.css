@@ -7,127 +7,15 @@
   box-sizing: border-box;
 }
 
-/* 平板触摸优化 */
-.tb-touch-optimized {
-  min-width: 44px !important;
-  min-height: 44px !important;
-  padding: 8px 12px !important;
-  position: relative !important;
-}
-
-.tb-touch-optimized::before {
-  content: '';
-  position: absolute;
-  top: -8px;
-  left: -8px;
-  right: -8px;
-  bottom: -8px;
-  background: transparent;
-  border-radius: 4px;
-  z-index: -1;
-}
-
-/* 平板响应式适配 */
-@media (max-width: 768px) and (orientation: portrait) {
-  /* 小平板竖屏 */
-  .tablet-browse-active .tb-touch-optimized {
-    min-width: 48px !important;
-    min-height: 48px !important;
-    font-size: 16px !important;
-  }
-}
-
-@media (min-width: 768px) and (max-width: 1024px) {
-  /* 中等平板 */
-  .tablet-browse-active .tb-touch-optimized {
-    min-width: 46px !important;
-    min-height: 46px !important;
-    font-size: 15px !important;
-  }
-}
-
-@media (min-width: 1024px) and (orientation: landscape) {
-  /* 大平板横屏 */
-  .tablet-browse-active .tb-touch-optimized {
-    min-width: 44px !important;
-    min-height: 44px !important;
-  }
-}
-
-/* 高DPI屏幕优化 */
-@media (-webkit-min-device-pixel-ratio: 2) {
-  .tablet-browse-active .tb-touch-optimized {
-    border-width: 0.5px !important;
-  }
-}
-
-/* 长按反馈效果 */
-.tb-long-press-feedback {
-  transform: scale(1.05) !important;
-  background-color: rgba(0, 123, 255, 0.1) !important;
-  border: 2px solid rgba(0, 123, 255, 0.4) !important;
-  box-shadow: 0 0 15px rgba(0, 123, 255, 0.3) !important;
-  transition: all 0.15s ease-out !important;
-  z-index: 9998 !important;
-}
-
-/* 平板手势视觉反馈 */
-.tb-gesture-feedback {
-  position: fixed;
-  pointer-events: none;
-  z-index: 10000;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 123, 255, 0.3) 0%, transparent 70%);
-  animation: tbGestureRipple 0.6s ease-out;
-}
-
-@keyframes tbGestureRipple {
-  0% {
-    transform: scale(0);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 0;
-  }
-}
-
-/* 平板特定的悬停效果 */
-@media (pointer: coarse) {
-  .tablet-browse-active .tb-hover-simulated {
-    transform: scale(1.02) !important;
-    box-shadow: 0 4px 20px rgba(0, 123, 255, 0.25) !important;
-    border-width: 3px !important;
-  }
-}
-
-/* 通用动画 */
-@keyframes tbFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes tbFadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-@keyframes tbSlideIn {
-  from { transform: translateY(-10px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-@keyframes tbPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-/* 悬停模拟效果 */
-.tb-hover-simulated {
-  background-color: rgba(0, 123, 255, 0.1) !important;
-  border: 2px solid rgba(0, 123, 255, 0.3) !important;
-  box-shadow: 0 0 10px rgba(0, 123, 255, 0.2) !important;
-  transition: all 0.2s ease !important;
+/* 禁用默认的触摸行为 */
+.tablet-browse-active {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* 元素高亮效果 */
@@ -153,72 +41,15 @@
   animation: tbFadeIn 0.2s ease-in-out;
 }
 
-/* 长按反馈效果 */
-.tb-long-press-feedback {
-  position: relative;
-  overflow: visible !important;
+/* 通用动画 */
+@keyframes tbFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.tb-long-press-feedback::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 123, 255, 0.3) 0%, transparent 70%);
-  transform: translate(-50%, -50%);
-  animation: tbLongPressRipple 0.8s ease-out;
-  pointer-events: none;
-  z-index: 9999;
-}
-
-@keyframes tbLongPressRipple {
-  0% {
-    width: 0;
-    height: 0;
-    opacity: 1;
-  }
-  100% {
-    width: 100px;
-    height: 100px;
-    opacity: 0;
-  }
-}
-
-/* 禁用默认的触摸行为 */
-.tablet-browse-active {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* 可交互元素的视觉提示 */
-.tb-interactive-hint {
-  position: relative;
-}
-
-.tb-interactive-hint::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  border: 1px dashed rgba(0, 123, 255, 0.3);
-  border-radius: 3px;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  pointer-events: none;
-}
-
-.tb-interactive-hint:hover::before {
-  opacity: 1;
+@keyframes tbPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
 /* 响应式设计 */

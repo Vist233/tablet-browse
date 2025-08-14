@@ -7,10 +7,7 @@ class ElementHighlighter {
   constructor() {
     this.settings = {};
     this.isActive = false;
-    this.currentHighlighted = null;
     this.highlightedElements = new Set();
-    this.touchTrail = [];
-    this.debounceTimer = null;
     this.lastHighlightTime = 0;
     
     this.init();
@@ -71,18 +68,6 @@ class ElementHighlighter {
     
     const touch = event.touches[0];
     this.updateHighlighting(touch.clientX, touch.clientY);
-    
-    // 记录触摸轨迹
-    this.touchTrail.push({
-      x: touch.clientX,
-      y: touch.clientY,
-      timestamp: Date.now()
-    });
-    
-    // 限制轨迹长度
-    if (this.touchTrail.length > 10) {
-      this.touchTrail.shift();
-    }
   }
 
   handleTouchEnd(event) {
@@ -223,88 +208,12 @@ class ElementHighlighter {
     // 开始观察元素
     this.intersectionObserver.observe(element);
     
-    // 添加高亮效果
-    this.addHighlightEffect(element, x, y);
-    
     // 设置自动移除定时器
     setTimeout(() => {
       if (!this.isActive) {
         this.removeHighlight(element);
       }
     }, 1500);
-  }
-
-  addHighlightEffect(element, x, y) {
-    // 创建涟漪效果
-    const ripple = document.createElement('div');
-    ripple.className = 'tb-highlight-ripple';
-    
-    const rect = element.getBoundingClientRect();
-    const size = Math.max(rect.width, rect.height) * 0.8;
-    
-    ripple.style.cssText = `
-      position: absolute;
-      left: ${x - rect.left - size/2}px;
-      top: ${y - rect.top - size/2}px;
-      width: ${size}px;
-      height: ${size}px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(0, 123, 255, 0.3) 0%, transparent 70%);
-      pointer-events: none;
-      z-index: 1;
-      animation: highlightRipple 0.6s ease-out;
-    `;
-    
-    // 确保元素有相对定位
-    const originalPosition = element.style.position;
-    if (!originalPosition || originalPosition === 'static') {
-      element.style.position = 'relative';
-    }
-    
-    element.appendChild(ripple);
-    
-    // 清理涟漪效果
-    setTimeout(() => {
-      ripple.remove();
-      if (!originalPosition || originalPosition === 'static') {
-        element.style.position = originalPosition;
-      }
-    }, 600);
-    
-    // 添加脉冲边框效果
-    this.addPulseBorder(element);
-  }
-
-  addPulseBorder(element) {
-    const border = document.createElement('div');
-    border.className = 'tb-highlight-border';
-    
-    const rect = element.getBoundingClientRect();
-    border.style.cssText = `
-      position: fixed;
-      left: ${rect.left - 2}px;
-      top: ${rect.top - 2}px;
-      width: ${rect.width + 4}px;
-      height: ${rect.height + 4}px;
-      border: 2px solid #007bff;
-      border-radius: 4px;
-      pointer-events: none;
-      z-index: ${Z_INDEX.HIGHLIGHT};
-      animation: highlightPulse 1s ease-in-out infinite;
-    `;
-    
-    document.body.appendChild(border);
-    
-    // 存储边框引用以便清理
-    element._tbHighlightBorder = border;
-    
-    // 自动清理
-    setTimeout(() => {
-      if (border.parentNode) {
-        border.remove();
-      }
-      delete element._tbHighlightBorder;
-    }, 2000);
   }
 
   removeHighlight(element) {
@@ -315,12 +224,6 @@ class ElementHighlighter {
     
     // 停止观察元素
     this.intersectionObserver.unobserve(element);
-    
-    // 清理边框效果
-    if (element._tbHighlightBorder) {
-      element._tbHighlightBorder.remove();
-      delete element._tbHighlightBorder;
-    }
   }
 
   clearAllHighlights() {
@@ -332,16 +235,7 @@ class ElementHighlighter {
 
   refreshHighlights() {
     // 重新计算所有高亮元素的位置
-    this.highlightedElements.forEach(element => {
-      if (element._tbHighlightBorder) {
-        const rect = element.getBoundingClientRect();
-        const border = element._tbHighlightBorder;
-        border.style.left = (rect.left - 2) + 'px';
-        border.style.top = (rect.top - 2) + 'px';
-        border.style.width = (rect.width + 4) + 'px';
-        border.style.height = (rect.height + 4) + 'px';
-      }
-    });
+    // 边框效果已移除，此方法现在为空
   }
 
   scheduleCleanup() {
