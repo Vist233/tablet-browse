@@ -124,7 +124,9 @@ async function getSettings() {
 function getDefaultSettings() {
   return {
     enabled: true,
-    highlightEnabled: true
+    swipeDisabled: true,
+    fontSizeEnabled: false,
+    fontSize: 100
   };
 }
 

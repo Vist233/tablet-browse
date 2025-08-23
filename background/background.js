@@ -25,11 +25,9 @@ chrome.runtime.onInstalled.addListener(async () => {
   // 初始化存储设置
   await ChromeAPI.storageSet({
     enabled: true,
-    hoverDelay: 800,
-    gestureNavEnabled: true,
-    highlightEnabled: true,
-    preventDefaultContextMenu: false,
-    gestureThreshold: 40
+    swipeDisabled: true,
+    fontSizeEnabled: false,
+    fontSize: 100
   });
 });
 
@@ -38,10 +36,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   (async () => {
     try {
       switch (request.action) {
-        case 'switchTab':
-          await handleTabSwitch(request.direction, sender.tab?.id);
-          sendResponse({ success: true });
-          break;
         case 'getSettings': {
           const settings = await ChromeAPI.storageGet();
           sendResponse({ success: true, settings });
@@ -62,7 +56,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true; // 保持消息通道开放直到 async 完成
 });
 
-// 处理标签页切换
+// 处理标签页切换（保留基本功能）
 async function handleTabSwitch(direction, currentTabId) {
   try {
     const tabs = await ChromeAPI.tabsQuery({ currentWindow: true });
@@ -83,21 +77,11 @@ async function handleTabSwitch(direction, currentTabId) {
   }
 }
 
-// 获取设置
+// 获取设置（简化版本）
 async function getSettings(sendResponse) {
   try {
     const settings = await ChromeAPI.storageGet();
     sendResponse({ success: true, settings });
-  } catch (error) {
-    sendResponse({ success: false, error: error.message });
-  }
-}
-
-// 更新设置
-async function updateSettings(newSettings, sendResponse) {
-  try {
-    await ChromeAPI.storageSet(newSettings);
-    sendResponse({ success: true });
   } catch (error) {
     sendResponse({ success: false, error: error.message });
   }

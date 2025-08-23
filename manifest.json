@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "TabletBrowse Pro",
-  "version": "1.1.0",
-  "description": "专为平板优化的浏览器插件，提供元素高亮和右侧滚动条增强功能",
+  "version": "1.2.0",
+  "description": "专为平板优化的浏览器插件，提供滑动行为禁用和右侧滚动条增强功能",
   
   "permissions": [
     "tabs",
@@ -21,12 +21,12 @@
         "content/utils/environment.js",
         "content/utils/constants.js",
         "content/utils/helpers.js",
-        "content/features/element-highlighter.js",
+        "content/features/swipe-disabler.js",
+        "content/features/font-size-adjuster.js",
         "content/main.js"
       ],
       "css": [
-        "content/styles/main.css",
-        "content/styles/highlighter.css"
+        "content/styles/main.css"
       ],
       "run_at": "document_end"
     }

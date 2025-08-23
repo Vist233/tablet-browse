@@ -161,43 +161,52 @@ body {
   text-align: right;
 }
 
-/* Footer */
-.popup-footer {
-  padding: 16px;
+/* Status Indicator */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
   background: #f8f9fa;
   border-top: 1px solid #e9ecef;
-  display: flex;
-  gap: 8px;
+  font-size: 12px;
+  color: #6c757d;
 }
 
-/* Buttons */
-.btn-primary, .btn-secondary {
-  flex: 1;
-  padding: 8px 16px;
-  border: none;
+.status-indicator::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #28a745;
+  margin-right: 8px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Real-time Save Indicator */
+.save-indicator {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: #28a745;
+  color: white;
+  padding: 4px 8px;
   border-radius: 4px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
+  font-size: 11px;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 1000;
 }
 
-.btn-primary {
-  background: #007bff;
-  color: white;
-}
-
-.btn-primary:hover {
-  background: #0056b3;
-}
-
-.btn-secondary {
-  background: #6c757d;
-  color: white;
-}
-
-.btn-secondary:hover {
-  background: #545b62;
+.save-indicator.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* Scrollbar */

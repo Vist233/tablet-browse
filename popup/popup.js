@@ -6,14 +6,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 获取所有控件元素
   const elements = {
     enablePlugin: document.getElementById('enablePlugin'),
-    hoverSimulation: document.getElementById('hoverSimulation'),
-    gestureNav: document.getElementById('gestureNav'),
-    elementHighlight: document.getElementById('elementHighlight'),
-    hoverDelay: document.getElementById('hoverDelay'),
-    gestureThreshold: document.getElementById('gestureThreshold'),
-    blockContextMenu: document.getElementById('blockContextMenu'),
-    resetSettings: document.getElementById('resetSettings'),
-    saveSettings: document.getElementById('saveSettings')
+    swipeDisabled: document.getElementById('swipeDisabled'),
+    fontSizeEnabled: document.getElementById('fontSizeEnabled'),
+    fontSize: document.getElementById('fontSize')
   };
 
   // 加载当前设置
@@ -28,35 +23,24 @@ document.addEventListener('DOMContentLoaded', async () => {
       const result = await window.ChromeAPI.storageGet();
       
       elements.enablePlugin.checked = result.enabled !== false;
-      elements.hoverSimulation.checked = result.hoverSimulation !== false;
-      // 精准点击模式已移除
-      elements.gestureNav.checked = result.gestureNavEnabled !== false;
-      // 聚焦模式已移除
-      elements.elementHighlight.checked = result.highlightEnabled !== false;
-      elements.hoverDelay.value = result.hoverDelay || 800;
-      elements.gestureThreshold.value = (typeof result.gestureThreshold === 'number') ? result.gestureThreshold : 40;
-      elements.blockContextMenu.checked = !!result.preventDefaultContextMenu;
+      elements.swipeDisabled.checked = result.swipeDisabled !== false;
+      elements.fontSizeEnabled.checked = result.fontSizeEnabled || false;
+      elements.fontSize.value = result.fontSize || 100;
       
-      updateHoverDelayDisplay();
-      updateGestureThresholdDisplay();
+      updateFontSizeDisplay();
     } catch (error) {
       console.error('Failed to load settings:', error);
     }
   }
 
-  // 保存设置
-  async function saveSettings() {
+  // 实时保存设置
+  async function saveSettingsImmediately() {
     try {
       const settings = {
         enabled: elements.enablePlugin.checked,
-        hoverSimulation: elements.hoverSimulation.checked,
-        // 精准点击模式已移除
-        gestureNavEnabled: elements.gestureNav.checked,
-        // 聚焦模式已移除
-        highlightEnabled: elements.elementHighlight.checked,
-        hoverDelay: parseInt(elements.hoverDelay.value),
-        gestureThreshold: parseInt(elements.gestureThreshold.value),
-        preventDefaultContextMenu: elements.blockContextMenu.checked
+        swipeDisabled: elements.swipeDisabled.checked,
+        fontSizeEnabled: elements.fontSizeEnabled.checked,
+        fontSize: parseInt(elements.fontSize.value)
       };
 
       await window.ChromeAPI.storageSet(settings);
@@ -64,48 +48,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       // 通知所有标签页设置已更新
       const tabs = await window.ChromeAPI.tabsQuery({});
       await Promise.all(tabs.map(tab => window.ChromeAPI.tabsSendMessage(tab.id, { action: 'settingsUpdated', settings }).catch(() => {})));
-
-      // 显示保存成功提示
-      showNotification('设置已保存');
+      
+      // 显示保存成功指示
+      showSaveIndicator();
     } catch (error) {
       console.error('Failed to save settings:', error);
-      showNotification('保存失败', 'error');
     }
   }
-
-  // 重置设置
-  async function resetSettings() {
-    try {
-      const defaultSettings = {
-        enabled: true,
-        hoverSimulation: true,
-        // 精准点击模式已移除
-        gestureNavEnabled: true,
-        highlightEnabled: true,
-        hoverDelay: 800,
-        gestureThreshold: 40,
-        preventDefaultContextMenu: false
-      };
-
-      await window.ChromeAPI.storageSet(defaultSettings);
-      await loadSettings();
-      
-      showNotification('设置已重置');
-    } catch (error) {
-      console.error('Failed to reset settings:', error);
-      showNotification('重置失败', 'error');
+  
+  // 显示保存指示器
+  function showSaveIndicator() {
+    const indicator = document.getElementById('saveIndicator');
+    if (indicator) {
+      indicator.classList.add('visible');
+      setTimeout(() => {
+        indicator.classList.remove('visible');
+      }, 1500);
     }
   }
 
   // 更新显示
-  function updateHoverDelayDisplay() {
-    const span = document.getElementById('hoverDelayValue');
-    if (span) span.textContent = elements.hoverDelay.value + 'ms';
-  }
-
-  function updateGestureThresholdDisplay() {
-    const span = document.getElementById('gestureThresholdValue');
-    if (span) span.textContent = elements.gestureThreshold.value + 'px';
+  function updateFontSizeDisplay() {
+    const span = document.getElementById('fontSizeValue');
+    if (span) span.textContent = elements.fontSize.value + '%';
   }
 
   // 显示通知
@@ -135,33 +100,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 绑定事件监听器
   function bindEventListeners() {
-    // 保存按钮
-    elements.saveSettings.addEventListener('click', saveSettings);
-    
-    // 重置按钮
-    elements.resetSettings.addEventListener('click', resetSettings);
-    
     // 滑块显示更新
-    elements.hoverDelay.addEventListener('input', updateHoverDelayDisplay);
-    elements.gestureThreshold.addEventListener('input', updateGestureThresholdDisplay);
+    elements.fontSize.addEventListener('input', updateFontSizeDisplay);
     
-    // 自动保存（checkbox/range）
-    const autoSaveTargets = [
+    // 实时保存所有设置更改
+    const settingsTargets = [
       elements.enablePlugin,
-      elements.hoverSimulation,
-      
-      elements.gestureNav,
-      elements.elementHighlight,
-      elements.blockContextMenu,
-      elements.hoverDelay,
-      elements.gestureThreshold
+      elements.swipeDisabled,
+      elements.fontSizeEnabled,
+      elements.fontSize
     ];
-    autoSaveTargets.forEach(element => {
+    
+    settingsTargets.forEach(element => {
       if (!element) return;
-      const eventName = element.type === 'range' ? 'change' : 'change';
+      const eventName = element.type === 'range' ? 'input' : 'change';
       element.addEventListener(eventName, () => {
-        clearTimeout(window.autoSaveTimeout);
-        window.autoSaveTimeout = setTimeout(saveSettings, 500);
+        saveSettingsImmediately();
       });
     });
   }

@@ -23,7 +23,9 @@ const SELECTORS = {
 
 // 事件名称
 const EVENTS = {
-  ELEMENT_HIGHLIGHTED: 'tb-element-highlighted'
+  ELEMENT_HIGHLIGHTED: 'tb-element-highlighted',
+  SWIPE_PREVENTED: 'tb-swipe-prevented',
+  FONT_SIZE_CHANGED: 'tb-font-size-changed'
 };
 
 // Z-index 层级

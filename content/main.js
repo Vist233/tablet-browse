@@ -80,7 +80,8 @@ class TabletBrowseMain {
 
   async initializeModules() {
     const moduleInitializers = [
-      { name: 'elementHighlighter', class: ElementHighlighter }
+      { name: 'swipeDisabler', class: SwipeDisabler },
+      { name: 'fontSizeAdjuster', class: FontSizeAdjuster }
     ];
 
     let successCount = 0;
@@ -251,10 +252,7 @@ class TabletBrowseMain {
 
   handleDOMChanges() {
     // DOM变化时通知相关模块
-    if (this.modules.elementHighlighter) {
-      // 刷新高亮系统
-      this.modules.elementHighlighter.refreshHighlights?.();
-    }
+    // 滑动禁用器不需要处理DOM变化
   }
 
   enable() {
@@ -319,7 +317,7 @@ class TabletBrowseMain {
   }
 
   getVersion() {
-    return '1.1.0';
+    return '1.2.0';
   }
 }
 
