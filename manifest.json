@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "TabletBrowse Pro",
-  "version": "1.2.0",
-  "description": "专为平板优化的浏览器插件，提供滑动行为禁用和右侧滚动条增强功能",
+  "version": "1.3.0",
+  "description": "专为平板优化的浏览器插件，提供视频播放优化、触摸保护、渲染优化等全方位平板浏览增强功能",
   
   "permissions": [
     "tabs",
@@ -22,7 +22,9 @@
         "content/utils/constants.js",
         "content/utils/helpers.js",
         "content/features/swipe-disabler.js",
-        "content/features/font-size-adjuster.js",
+        "content/features/video-optimizer.js",
+        "content/features/touch-guard.js",
+        "content/features/render-optimizer.js",
         "content/main.js"
       ],
       "css": [

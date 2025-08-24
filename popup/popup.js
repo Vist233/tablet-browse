@@ -7,8 +7,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const elements = {
     enablePlugin: document.getElementById('enablePlugin'),
     swipeDisabled: document.getElementById('swipeDisabled'),
-    fontSizeEnabled: document.getElementById('fontSizeEnabled'),
-    fontSize: document.getElementById('fontSize')
+    videoOptimization: document.getElementById('videoOptimization'),
+    touchGuard: document.getElementById('touchGuard'),
+    renderOptimization: document.getElementById('renderOptimization')
   };
 
   // 加载当前设置
@@ -24,10 +25,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       elements.enablePlugin.checked = result.enabled !== false;
       elements.swipeDisabled.checked = result.swipeDisabled !== false;
-      elements.fontSizeEnabled.checked = result.fontSizeEnabled || false;
-      elements.fontSize.value = result.fontSize || 100;
-      
-      updateFontSizeDisplay();
+      elements.videoOptimization.checked = result.videoOptimization?.enabled ?? true;
+      elements.touchGuard.checked = result.touchGuard?.enabled ?? true;
+      elements.renderOptimization.checked = result.renderOptimization?.enabled ?? true;
     } catch (error) {
       console.error('Failed to load settings:', error);
     }
@@ -39,8 +39,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       const settings = {
         enabled: elements.enablePlugin.checked,
         swipeDisabled: elements.swipeDisabled.checked,
-        fontSizeEnabled: elements.fontSizeEnabled.checked,
-        fontSize: parseInt(elements.fontSize.value)
+        videoOptimization: { enabled: elements.videoOptimization.checked },
+        touchGuard: { enabled: elements.touchGuard.checked },
+        renderOptimization: { enabled: elements.renderOptimization.checked }
       };
 
       await window.ChromeAPI.storageSet(settings);
@@ -48,29 +49,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       // 通知所有标签页设置已更新
       const tabs = await window.ChromeAPI.tabsQuery({});
       await Promise.all(tabs.map(tab => window.ChromeAPI.tabsSendMessage(tab.id, { action: 'settingsUpdated', settings }).catch(() => {})));
-      
-      // 显示保存成功指示
-      showSaveIndicator();
     } catch (error) {
       console.error('Failed to save settings:', error);
     }
-  }
-  
-  // 显示保存指示器
-  function showSaveIndicator() {
-    const indicator = document.getElementById('saveIndicator');
-    if (indicator) {
-      indicator.classList.add('visible');
-      setTimeout(() => {
-        indicator.classList.remove('visible');
-      }, 1500);
-    }
-  }
-
-  // 更新显示
-  function updateFontSizeDisplay() {
-    const span = document.getElementById('fontSizeValue');
-    if (span) span.textContent = elements.fontSize.value + '%';
   }
 
   // 显示通知
@@ -100,15 +81,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 绑定事件监听器
   function bindEventListeners() {
-    // 滑块显示更新
-    elements.fontSize.addEventListener('input', updateFontSizeDisplay);
-    
     // 实时保存所有设置更改
     const settingsTargets = [
       elements.enablePlugin,
       elements.swipeDisabled,
-      elements.fontSizeEnabled,
-      elements.fontSize
+      elements.videoOptimization,
+      elements.touchGuard,
+      elements.renderOptimization
     ];
     
     settingsTargets.forEach(element => {

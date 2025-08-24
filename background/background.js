@@ -26,8 +26,9 @@ chrome.runtime.onInstalled.addListener(async () => {
   await ChromeAPI.storageSet({
     enabled: true,
     swipeDisabled: true,
-    fontSizeEnabled: false,
-    fontSize: 100
+    videoOptimization: { enabled: true },
+    touchGuard: { enabled: true },
+    renderOptimization: { enabled: true }
   });
 });
 

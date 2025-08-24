@@ -81,7 +81,9 @@ class TabletBrowseMain {
   async initializeModules() {
     const moduleInitializers = [
       { name: 'swipeDisabler', class: SwipeDisabler },
-      { name: 'fontSizeAdjuster', class: FontSizeAdjuster }
+      { name: 'videoOptimizer', class: VideoOptimizer },
+      { name: 'touchGuard', class: TouchGuard },
+      { name: 'renderOptimizer', class: RenderOptimizer }
     ];
 
     let successCount = 0;
@@ -317,7 +319,7 @@ class TabletBrowseMain {
   }
 
   getVersion() {
-    return '1.2.0';
+    return '1.3.0';
   }
 }
 

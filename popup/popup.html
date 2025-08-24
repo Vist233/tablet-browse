@@ -31,35 +31,38 @@
             </label>
             <p class="feature-desc">防止页面左右滑动导航</p>
           </div>
-        
-        <div class="feature-item">
-          <label class="toggle-item">
-            <input type="checkbox" id="fontSizeEnabled">
-            <span class="toggle-slider"></span>
-            <span class="toggle-label">字体大小调节</span>
-          </label>
-          <p class="feature-desc">调整网页字体显示大小</p>
+          
+          <div class="feature-item">
+            <label class="toggle-item">
+              <input type="checkbox" id="videoOptimization" checked>
+              <span class="toggle-slider"></span>
+              <span class="toggle-label">视频播放优化</span>
+            </label>
+            <p class="feature-desc">强制H.264编码，限制分辨率</p>
+          </div>
+          
+          <div class="feature-item">
+            <label class="toggle-item">
+              <input type="checkbox" id="touchGuard" checked>
+              <span class="toggle-slider"></span>
+              <span class="toggle-label">触摸保护</span>
+            </label>
+            <p class="feature-desc">防止误触，边缘保护带</p>
+          </div>
+          
+          <div class="feature-item">
+            <label class="toggle-item">
+              <input type="checkbox" id="renderOptimization" checked>
+              <span class="toggle-slider"></span>
+              <span class="toggle-label">渲染优化</span>
+            </label>
+            <p class="feature-desc">自动懒加载，减少动画开销</p>
+          </div>
         </div>
-        
-      </div>
-      
-      <div class="settings-section">
-        <h3>字体大小设置</h3>
-        <div class="setting-item">
-          <label for="fontSize">字体大小 (%)</label>
-          <input type="range" id="fontSize" min="50" max="200" value="100" step="5">
-          <span id="fontSizeValue" class="setting-value">100%</span>
-        </div>
-      </div>
     </main>
-    
-    <!-- 设置立即生效，无需保存按钮 -->
-    <div class="status-indicator">
-      设置已实时保存
-    </div>
   </div>
-  <div class="save-indicator" id="saveIndicator">已保存</div>
   <script src="../content/utils/chrome-helpers.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
+
