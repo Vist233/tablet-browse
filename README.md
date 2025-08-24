@@ -62,4 +62,4 @@ TabletBrowseForPad/
 
 ## 许可证
 
-MIT License
+Apache 2.0
