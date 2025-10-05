@@ -9,7 +9,7 @@ class VideoOptimizer {
     this.observer = null;
     this.videoElements = new Set();
     this.isEnabled = false;
-    
+
     this.init();
   }
 
@@ -18,11 +18,11 @@ class VideoOptimizer {
     this.isEnabled = this.settings.videoOptimization?.enabled ?? true;
     
     if (!this.isEnabled) {
-      console.log('VideoOptimizer: Disabled');
+      logDebug('VideoOptimizer: Disabled');
       return;
     }
 
-    console.log('VideoOptimizer: Initializing...');
+    logDebug('VideoOptimizer: Initializing...');
     
     // 默认设置
     this.defaultSettings = {
@@ -39,10 +39,11 @@ class VideoOptimizer {
       ...(this.settings.videoOptimization || {})
     };
 
+    this.patchMediaSource();
     this.setupMutationObserver();
     this.processExistingVideos();
     
-    console.log('VideoOptimizer: Initialized with settings', this.settings.videoOptimization);
+    logDebug('VideoOptimizer: Initialized with settings', this.settings.videoOptimization);
   }
 
   setupMutationObserver() {
@@ -107,14 +108,14 @@ class VideoOptimizer {
     // 应用分辨率限制
     this.applyResolutionLimits(video);
 
-    console.log('VideoOptimizer: Video optimized', video.src);
+    logDebug('VideoOptimizer: Video optimized', video.src);
   }
 
   processVideoSource(src) {
     if (!src) return src;
 
-    const url = new URL(src, window.location.href);
-    
+    let url = new URL(src, window.location.href);
+
     // 强制 H.264
     if (this.settings.videoOptimization.forceH264) {
       this.forceH264Codec(url);
@@ -122,7 +123,7 @@ class VideoOptimizer {
 
     // 拦截 AV1/VP9
     if (this.settings.videoOptimization.blockAV1 || this.settings.videoOptimization.blockVP9) {
-      this.blockUnwantedCodecs(url);
+      url = this.blockUnwantedCodecs(url);
     }
 
     // 添加分辨率参数
@@ -152,7 +153,7 @@ class VideoOptimizer {
     if (this.settings.videoOptimization.blockAV1 && 
         (pathname.includes('av1') || url.search.includes('av1') || 
          url.search.includes('codec=av01') || url.search.includes('vcodec=av1'))) {
-      console.log('VideoOptimizer: Blocking AV1 stream');
+      logDebug('VideoOptimizer: Blocking AV1 stream');
       return this.createFallbackUrl(url);
     }
 
@@ -160,7 +161,7 @@ class VideoOptimizer {
     if (this.settings.videoOptimization.blockVP9 && 
         (pathname.includes('vp9') || url.search.includes('vp9') || 
          url.search.includes('codec=vp9') || url.search.includes('vcodec=vp9'))) {
-      console.log('VideoOptimizer: Blocking VP9 stream');
+      logDebug('VideoOptimizer: Blocking VP9 stream');
       return this.createFallbackUrl(url);
     }
 
@@ -177,7 +178,7 @@ class VideoOptimizer {
     fallbackUrl.searchParams.delete('quality');
     fallbackUrl.searchParams.delete('q');
     
-    return fallbackUrl.toString();
+    return fallbackUrl;
   }
 
   addResolutionParams(url) {
@@ -220,6 +221,52 @@ class VideoOptimizer {
     if (video.readyState >= 1) {
       this.enforceResolutionLimits(video, maxRes, maxFps);
     }
+  }
+
+  shouldBlockMimeType(mimeType) {
+    if (!mimeType || !this.isEnabled) return false;
+    const lowered = mimeType.toLowerCase();
+
+    if (this.settings.videoOptimization.blockAV1 && lowered.includes('av01')) {
+      logDebug('VideoOptimizer: Blocking AV1 adaptive stream', mimeType);
+      return true;
+    }
+
+    if (this.settings.videoOptimization.blockVP9 && (lowered.includes('vp9') || lowered.includes('vp09'))) {
+      logDebug('VideoOptimizer: Blocking VP9 adaptive stream', mimeType);
+      return true;
+    }
+
+    return false;
+  }
+
+  patchMediaSource() {
+    if (window.__tabletBrowseMediaSourcePatched || typeof MediaSource === 'undefined') {
+      return;
+    }
+
+    const originalAddSourceBuffer = MediaSource.prototype.addSourceBuffer;
+    if (typeof originalAddSourceBuffer !== 'function') {
+      return;
+    }
+
+    MediaSource.prototype.addSourceBuffer = function(mimeType, ...args) {
+      try {
+        const optimizer = window.tabletBrowseVideoOptimizer;
+        if (optimizer && optimizer.shouldBlockMimeType && optimizer.shouldBlockMimeType(mimeType)) {
+          throw new DOMException('NotSupportedError', 'NotSupportedError');
+        }
+      } catch (error) {
+        if (error?.name === 'NotSupportedError') {
+          throw error;
+        }
+        throw error;
+      }
+
+      return originalAddSourceBuffer.call(this, mimeType, ...args);
+    };
+
+    window.__tabletBrowseMediaSourcePatched = true;
   }
 
   enforceResolutionLimits(video, maxRes, maxFps) {
@@ -270,12 +317,12 @@ class VideoOptimizer {
   enable() {
     this.isEnabled = true;
     this.processExistingVideos();
-    console.log('VideoOptimizer: Enabled');
+    logDebug('VideoOptimizer: Enabled');
   }
 
   disable() {
     this.isEnabled = false;
-    console.log('VideoOptimizer: Disabled');
+    logDebug('VideoOptimizer: Disabled');
   }
 
   cleanup() {

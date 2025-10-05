@@ -9,8 +9,15 @@ class SwipeDisabler {
     this.isActive = false;
     this.touchStartX = 0;
     this.touchStartY = 0;
-    this.swipeThreshold = 50; // 滑动阈值（像素）
-    
+    this.touchStartTime = 0;
+    this.swipeThreshold = 18; // 滑动阈值（像素）
+    this.edgeGuardWidth = 24; // 屏幕边缘保护宽度
+
+    this.handleTouchStartBound = this.handleTouchStart.bind(this);
+    this.handleTouchMoveBound = this.handleTouchMove.bind(this);
+    this.handleTouchEndBound = this.handleTouchEnd.bind(this);
+    this.handleSettingsUpdatedBound = this.handleSettingsUpdated.bind(this);
+
     this.init();
   }
 
@@ -21,48 +28,52 @@ class SwipeDisabler {
 
   bindEvents() {
     // 触摸事件监听 - 阻止默认滑动行为
-    document.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
-    document.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
-    document.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: true });
-    
+    document.addEventListener('touchstart', this.handleTouchStartBound, { passive: false });
+    document.addEventListener('touchmove', this.handleTouchMoveBound, { passive: false });
+    document.addEventListener('touchend', this.handleTouchEndBound, { passive: true });
+
     // 设置更新监听
-    document.addEventListener('settingsUpdated', (event) => {
-      this.settings = event.detail.settings;
-    });
+    document.addEventListener('settingsUpdated', this.handleSettingsUpdatedBound);
   }
 
   handleTouchStart(event) {
     if (!this.settings.swipeDisabled) return;
-    
+    if (event.touches.length !== 1) return;
+
     const touch = event.touches[0];
     this.touchStartX = touch.clientX;
     this.touchStartY = touch.clientY;
     
     // 记录开始时间用于速度计算
     this.touchStartTime = Date.now();
+
+    // 针对边缘滑动手势，立即阻止默认返回操作
+    if (this.isEdgeSwipeStart(this.touchStartX) && event.cancelable) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
   }
 
   handleTouchMove(event) {
     if (!this.settings.swipeDisabled || event.touches.length !== 1) return;
-    
+
     const touch = event.touches[0];
     const currentX = touch.clientX;
     const currentY = touch.clientY;
-    
+
     const deltaX = Math.abs(currentX - this.touchStartX);
     const deltaY = Math.abs(currentY - this.touchStartY);
-    
+
+    if (!event.cancelable) return;
+
+    const isHorizontalPriority = deltaX >= deltaY;
+    const exceedsThreshold = deltaX > this.swipeThreshold;
+    const startedFromEdge = this.isEdgeSwipeStart(this.touchStartX);
+
     // 如果是明显的水平滑动，阻止默认行为
-    if (deltaX > this.swipeThreshold && deltaX > deltaY * 2) {
-      event.preventDefault();
-      event.stopPropagation();
-      
-      // 触发滑动阻止事件
-      document.dispatchEvent(createCustomEvent('swipePrevented', {
-        direction: currentX > this.touchStartX ? 'right' : 'left',
-        distance: deltaX,
-        timestamp: Date.now()
-      }));
+    if ((isHorizontalPriority && exceedsThreshold) || startedFromEdge) {
+      this.preventSwipe(event, currentX > this.touchStartX ? 'right' : 'left', deltaX);
+      return;
     }
   }
 
@@ -73,26 +84,51 @@ class SwipeDisabler {
     this.touchStartX = 0;
     this.touchStartY = 0;
     this.touchStartTime = 0;
+    this.isActive = false;
+  }
+
+  handleSettingsUpdated(event) {
+    this.settings = event.detail.settings;
+  }
+
+  isEdgeSwipeStart(x) {
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+    return x < this.edgeGuardWidth || x > viewportWidth - this.edgeGuardWidth;
+  }
+
+  preventSwipe(event, direction, distance) {
+    if (event.cancelable) {
+      event.preventDefault();
+    }
+    event.stopImmediatePropagation();
+    this.isActive = true;
+
+    document.dispatchEvent(createCustomEvent('swipePrevented', {
+      direction,
+      distance,
+      timestamp: Date.now()
+    }));
   }
 
   // 公共方法：启用滑动禁用
   enable() {
     this.isActive = true;
-    console.log('TabletBrowse Pro: Swipe disabler enabled');
+    logDebug('TabletBrowse Pro: Swipe disabler enabled');
   }
 
   // 公共方法：禁用滑动禁用
   disable() {
     this.isActive = false;
-    console.log('TabletBrowse Pro: Swipe disabler disabled');
+    logDebug('TabletBrowse Pro: Swipe disabler disabled');
   }
 
   // 公共方法：清理
   cleanup() {
     // 移除事件监听器
-    document.removeEventListener('touchstart', this.handleTouchStart);
-    document.removeEventListener('touchmove', this.handleTouchMove);
-    document.removeEventListener('touchend', this.handleTouchEnd);
+    document.removeEventListener('touchstart', this.handleTouchStartBound);
+    document.removeEventListener('touchmove', this.handleTouchMoveBound);
+    document.removeEventListener('touchend', this.handleTouchEndBound);
+    document.removeEventListener('settingsUpdated', this.handleSettingsUpdatedBound);
   }
 
   // 公共方法：获取状态

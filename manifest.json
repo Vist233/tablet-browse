@@ -15,7 +15,10 @@
   
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": [
+        "https://*/*",
+        "http://*/*"
+      ],
       "js": [
         "content/utils/chrome-helpers.js",
         "content/utils/environment.js",
@@ -23,7 +26,6 @@
         "content/utils/helpers.js",
         "content/features/swipe-disabler.js",
         "content/features/video-optimizer.js",
-        "content/features/touch-guard.js",
         "content/features/render-optimizer.js",
         "content/main.js"
       ],
@@ -59,7 +61,10 @@
         "content/assets/*.png",
         "content/assets/*.svg"
       ],
-      "matches": ["<all_urls>"]
+      "matches": [
+        "https://*/*",
+        "http://*/*"
+      ]
     }
   ]
 }

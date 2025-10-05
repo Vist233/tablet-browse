@@ -9,7 +9,11 @@ class RenderOptimizer {
     this.isEnabled = false;
     this.observer = null;
     this.optimizedElements = new Set();
-    
+    this.pendingNodes = new Set();
+    this.processScheduled = false;
+    this.pendingTimer = null;
+    this.pendingIdleId = null;
+
     this.init();
   }
 
@@ -18,11 +22,11 @@ class RenderOptimizer {
     this.isEnabled = this.settings.renderOptimization?.enabled ?? true;
     
     if (!this.isEnabled) {
-      console.log('RenderOptimizer: Disabled');
+      logDebug('RenderOptimizer: Disabled');
       return;
     }
 
-    console.log('RenderOptimizer: Initializing...');
+    logDebug('RenderOptimizer: Initializing...');
 
     // 默认设置
     this.defaultSettings = {
@@ -43,7 +47,7 @@ class RenderOptimizer {
     this.setupMutationObserver();
     this.optimizeExistingContent();
     
-    console.log('RenderOptimizer: Initialized with settings', this.settings.renderOptimization);
+    logDebug('RenderOptimizer: Initialized with settings', this.settings.renderOptimization);
   }
 
   setupMutationObserver() {
@@ -51,8 +55,8 @@ class RenderOptimizer {
       mutations.forEach(mutation => {
         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
           mutation.addedNodes.forEach(node => {
-            if (node.nodeType === Node.ELEMENT_NODE) {
-              this.optimizeNode(node);
+            if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+              this.queueNodeForOptimization(node);
             }
           });
         }
@@ -85,6 +89,15 @@ class RenderOptimizer {
   optimizeNode(node) {
     if (this.optimizedElements.has(node)) return;
 
+    if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+      node.childNodes.forEach(child => {
+        if (child.nodeType === Node.ELEMENT_NODE) {
+          this.optimizeNode(child);
+        }
+      });
+      return;
+    }
+
     // 优化图片
     if (node.tagName === 'IMG') {
       this.optimizeImage(node);
@@ -104,10 +117,44 @@ class RenderOptimizer {
     this.optimizedElements.add(node);
   }
 
+  queueNodeForOptimization(node) {
+    if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+      node.childNodes.forEach(child => this.queueNodeForOptimization(child));
+      return;
+    }
+
+    if (this.optimizedElements.has(node) || this.pendingNodes.has(node)) {
+      return;
+    }
+
+    this.pendingNodes.add(node);
+    this.schedulePendingProcessing();
+  }
+
+  schedulePendingProcessing() {
+    if (this.processScheduled) return;
+    this.processScheduled = true;
+
+    const process = () => {
+      this.processScheduled = false;
+      this.pendingTimer = null;
+      this.pendingIdleId = null;
+      const nodes = Array.from(this.pendingNodes);
+      this.pendingNodes.clear();
+      nodes.forEach(node => this.optimizeNode(node));
+    };
+
+    if (typeof requestIdleCallback === 'function') {
+      this.pendingIdleId = requestIdleCallback(process, { timeout: 120 });
+    } else {
+      this.pendingTimer = setTimeout(process, 32);
+    }
+  }
+
   optimizeAllImages() {
     const images = document.querySelectorAll('img');
     images.forEach(img => this.optimizeImage(img));
-    console.log(`RenderOptimizer: Optimized ${images.length} images`);
+    logDebug(`RenderOptimizer: Optimized ${images.length} images`);
   }
 
   optimizeImage(img) {
@@ -160,7 +207,7 @@ class RenderOptimizer {
         img.srcset = optimizedDescriptors.join(', ');
       }
     } catch (error) {
-      console.warn('RenderOptimizer: Failed to optimize srcset', error);
+      logWarn('RenderOptimizer: Failed to optimize srcset', error);
     }
   }
 
@@ -205,7 +252,7 @@ class RenderOptimizer {
       iframe.loading = 'lazy';
     });
 
-    console.log(`RenderOptimizer: Added lazy loading to ${images.length} images and ${iframes.length} iframes`);
+    logDebug(`RenderOptimizer: Added lazy loading to ${images.length} images and ${iframes.length} iframes`);
   }
 
   reduceAnimationOverhead() {
@@ -361,12 +408,12 @@ class RenderOptimizer {
   enable() {
     this.isEnabled = true;
     this.optimizeExistingContent();
-    console.log('RenderOptimizer: Enabled');
+    logDebug('RenderOptimizer: Enabled');
   }
 
   disable() {
     this.isEnabled = false;
-    
+
     // 移除添加的样式
     const styles = document.querySelectorAll('style');
     styles.forEach(style => {
@@ -383,7 +430,18 @@ class RenderOptimizer {
       this.observer.disconnect();
     }
 
-    console.log('RenderOptimizer: Disabled');
+    if (this.pendingIdleId !== null && typeof cancelIdleCallback === 'function') {
+      cancelIdleCallback(this.pendingIdleId);
+      this.pendingIdleId = null;
+    }
+    if (this.pendingTimer) {
+      clearTimeout(this.pendingTimer);
+      this.pendingTimer = null;
+    }
+    this.pendingNodes.clear();
+    this.processScheduled = false;
+
+    logDebug('RenderOptimizer: Disabled');
   }
 
   cleanup() {

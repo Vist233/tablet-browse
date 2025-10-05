@@ -2,13 +2,19 @@
  * TabletBrowse Pro - Popup 脚本
  */
 
+if (typeof window.tabletBrowseDebug === 'undefined') {
+  window.tabletBrowseDebug = false;
+}
+
+const popupDebugEnabled = () => Boolean(window.tabletBrowseDebug);
+const popupLogError = (...args) => { if (popupDebugEnabled()) console.error('[TabletBrowse]', ...args); };
+
 document.addEventListener('DOMContentLoaded', async () => {
   // 获取所有控件元素
   const elements = {
     enablePlugin: document.getElementById('enablePlugin'),
     swipeDisabled: document.getElementById('swipeDisabled'),
     videoOptimization: document.getElementById('videoOptimization'),
-    touchGuard: document.getElementById('touchGuard'),
     renderOptimization: document.getElementById('renderOptimization')
   };
 
@@ -26,10 +32,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       elements.enablePlugin.checked = result.enabled !== false;
       elements.swipeDisabled.checked = result.swipeDisabled !== false;
       elements.videoOptimization.checked = result.videoOptimization?.enabled ?? true;
-      elements.touchGuard.checked = result.touchGuard?.enabled ?? true;
       elements.renderOptimization.checked = result.renderOptimization?.enabled ?? true;
     } catch (error) {
-      console.error('Failed to load settings:', error);
+      popupLogError('Failed to load settings:', error);
     }
   }
 
@@ -40,7 +45,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         enabled: elements.enablePlugin.checked,
         swipeDisabled: elements.swipeDisabled.checked,
         videoOptimization: { enabled: elements.videoOptimization.checked },
-        touchGuard: { enabled: elements.touchGuard.checked },
         renderOptimization: { enabled: elements.renderOptimization.checked }
       };
 
@@ -50,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const tabs = await window.ChromeAPI.tabsQuery({});
       await Promise.all(tabs.map(tab => window.ChromeAPI.tabsSendMessage(tab.id, { action: 'settingsUpdated', settings }).catch(() => {})));
     } catch (error) {
-      console.error('Failed to save settings:', error);
+      popupLogError('Failed to save settings:', error);
     }
   }
 
@@ -86,7 +90,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       elements.enablePlugin,
       elements.swipeDisabled,
       elements.videoOptimization,
-      elements.touchGuard,
       elements.renderOptimization
     ];
     

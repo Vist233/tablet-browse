@@ -30,14 +30,14 @@ class TabletBrowseMain {
 
   async doInit() {
     try {
-      console.log('TabletBrowse Pro: Initializing...');
+      logDebug('TabletBrowse Pro: Initializing...');
       
       // 加载设置
       await this.loadSettings();
       
       // 检查是否启用
       if (!this.settings.enabled) {
-        console.log('TabletBrowse Pro: Plugin is disabled');
+        logDebug('TabletBrowse Pro: Plugin is disabled');
         return;
       }
       
@@ -54,7 +54,7 @@ class TabletBrowseMain {
       this.applyScrollbarEnhancements();
       
       this.isInitialized = true;
-      console.log('TabletBrowse Pro: Initialization complete');
+      logDebug('TabletBrowse Pro: Initialization complete');
       
       // 触发初始化完成事件
       document.dispatchEvent(createCustomEvent('tb-initialized', {
@@ -63,16 +63,16 @@ class TabletBrowseMain {
       }));
       
     } catch (error) {
-      console.error('TabletBrowse Pro: Initialization failed', error);
+      logError('TabletBrowse Pro: Initialization failed', error);
     }
   }
 
   async loadSettings() {
     try {
       this.settings = await getSettings();
-      console.log('TabletBrowse Pro: Settings loaded', this.settings);
+      logDebug('TabletBrowse Pro: Settings loaded', this.settings);
     } catch (error) {
-      console.error('TabletBrowse Pro: Failed to load settings', error);
+      logError('TabletBrowse Pro: Failed to load settings', error);
       // 使用默认设置
       this.settings = getDefaultSettings();
     }
@@ -82,14 +82,13 @@ class TabletBrowseMain {
     const moduleInitializers = [
       { name: 'swipeDisabler', class: SwipeDisabler },
       { name: 'videoOptimizer', class: VideoOptimizer },
-      { name: 'touchGuard', class: TouchGuard },
       { name: 'renderOptimizer', class: RenderOptimizer }
     ];
 
     let successCount = 0;
     for (const { name, class: ModuleClass } of moduleInitializers) {
       try {
-        console.log(`TabletBrowse Pro: Initializing ${name}...`);
+        logDebug(`TabletBrowse Pro: Initializing ${name}...`);
 
         // 检查类是否存在
         if (typeof ModuleClass !== 'function') {
@@ -101,15 +100,15 @@ class TabletBrowseMain {
         // 设置全局引用
         window[`tabletBrowse${name.charAt(0).toUpperCase() + name.slice(1)}`] = this.modules[name];
 
-        console.log(`TabletBrowse Pro: ${name} initialized successfully`);
+        logDebug(`TabletBrowse Pro: ${name} initialized successfully`);
         successCount++;
       } catch (error) {
-        console.error(`TabletBrowse Pro: Failed to initialize ${name}`, error);
+        logError(`TabletBrowse Pro: Failed to initialize ${name}`, error);
         // 继续初始化其他模块
       }
     }
 
-    console.log(`TabletBrowse Pro: ${successCount}/${moduleInitializers.length} modules initialized`);
+    logDebug(`TabletBrowse Pro: ${successCount}/${moduleInitializers.length} modules initialized`);
 
     if (successCount === 0) {
       throw new Error('No modules were successfully initialized');
@@ -212,14 +211,18 @@ class TabletBrowseMain {
     `;
     
     addStyles(scrollbarCSS);
-    console.log('TabletBrowse Pro: Scrollbar enhancements applied');
+    logDebug('TabletBrowse Pro: Scrollbar enhancements applied');
   }
 
   
 
   handleSettingsUpdate(newSettings) {
-    console.log('TabletBrowse Pro: Settings updated', newSettings);
+    logDebug('TabletBrowse Pro: Settings updated', newSettings);
     this.settings = { ...this.settings, ...newSettings };
+
+    if (typeof invalidateSettingsCache === 'function') {
+      invalidateSettingsCache(this.settings);
+    }
     
     // 通知所有模块设置已更新
     document.dispatchEvent(createCustomEvent('settingsUpdated', {
@@ -269,7 +272,7 @@ class TabletBrowseMain {
       }
     });
     
-    console.log('TabletBrowse Pro: Enabled');
+    logDebug('TabletBrowse Pro: Enabled');
   }
 
   disable() {
@@ -285,7 +288,7 @@ class TabletBrowseMain {
     // 清理所有UI状态
     this.cleanup();
     
-    console.log('TabletBrowse Pro: Disabled');
+    logDebug('TabletBrowse Pro: Disabled');
   }
 
   cleanup() {

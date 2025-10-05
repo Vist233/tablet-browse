@@ -28,7 +28,7 @@ function detectEnvironment() {
         env.manifest = chrome.runtime.getManifest();
       }
     } catch (error) {
-      console.warn('Chrome runtime available but extension APIs not accessible:', error);
+      logWarn('Chrome runtime available but extension APIs not accessible:', error);
     }
   }
   
@@ -104,7 +104,7 @@ class EnvironmentAdapter {
     return {
       runtime: {
         sendMessage: (message, callback) => {
-          console.warn('Mock chrome.runtime.sendMessage called:', message);
+          logWarn('Mock chrome.runtime.sendMessage called:', message);
           if (callback) {
             // 模拟异步响应
             setTimeout(() => {
@@ -118,12 +118,12 @@ class EnvironmentAdapter {
         },
         onMessage: {
           addListener: (listener) => {
-            console.warn('Mock chrome.runtime.onMessage.addListener called');
+            logWarn('Mock chrome.runtime.onMessage.addListener called');
             // 存储监听器，但在测试环境中不会收到真实消息
           }
         },
         openOptionsPage: () => {
-          console.warn('Mock chrome.runtime.openOptionsPage called');
+          logWarn('Mock chrome.runtime.openOptionsPage called');
           alert('设置功能仅在浏览器扩展环境中可用');
         },
         lastError: null
@@ -131,13 +131,13 @@ class EnvironmentAdapter {
       storage: {
         sync: {
           get: (keys, callback) => {
-            console.warn('Mock chrome.storage.sync.get called');
+            logWarn('Mock chrome.storage.sync.get called');
             if (callback) {
               setTimeout(() => callback(getDefaultSettings()), 10);
             }
           },
           set: (items, callback) => {
-            console.warn('Mock chrome.storage.sync.set called:', items);
+            logWarn('Mock chrome.storage.sync.set called:', items);
             if (callback) {
               setTimeout(() => callback(), 10);
             }
@@ -152,7 +152,7 @@ class EnvironmentAdapter {
     if (this.env.isExtension) {
       chrome.runtime.sendMessage(message, callback);
     } else {
-      console.warn('Message sending not available in test environment:', message);
+      logWarn('Message sending not available in test environment:', message);
       if (callback) {
         setTimeout(() => {
           callback({ success: false, error: 'Not in extension environment' });
@@ -189,7 +189,7 @@ class EnvironmentAdapter {
           localStorage.setItem('tabletBrowseSettings', JSON.stringify(items));
           resolve();
         } catch (error) {
-          console.error('Failed to save settings to localStorage:', error);
+          logError('Failed to save settings to localStorage:', error);
           resolve();
         }
       }
@@ -220,7 +220,7 @@ class EnvironmentAdapter {
       info.push(`Tablet Features: UA=${this.env.isTablet.userAgent}, Size=${this.env.isTablet.screenSize}, Orientation=${this.env.isTablet.orientationSupport}`);
     }
     
-    console.log('TabletBrowse Pro Environment Info:\n' + info.join('\n'));
+    logDebug('TabletBrowse Pro Environment Info:\n' + info.join('\n'));
     
     // 在测试模式下显示提示
     if (this.env.isTestMode && !this.env.isExtension) {

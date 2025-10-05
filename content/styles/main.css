@@ -7,14 +7,8 @@
   box-sizing: border-box;
 }
 
-/* 禁用默认的触摸行为 */
+/* 针对触摸优化的基础样式 */
 .tablet-browse-active {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
 

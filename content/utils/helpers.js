@@ -2,6 +2,9 @@
  * TabletBrowse Pro - 工具函数
  */
 
+let settingsCache = null;
+let settingsPromise = null;
+
 // 防抖函数
 function debounce(func, wait) {
   let timeout;
@@ -109,15 +112,29 @@ function getParents(element) {
 
 // 安全地获取设置（统一走 ChromeAPI 存储）
 async function getSettings() {
-  try {
-    const defaults = getDefaultSettings();
-    const raw = await (window.ChromeAPI?.storageGet ? window.ChromeAPI.storageGet() : Promise.resolve({}));
-    // 合并默认值，确保缺省项存在
-    return { ...defaults, ...(raw || {}) };
-  } catch (error) {
-    console.error('Failed to get settings:', error);
-    return getDefaultSettings();
+  if (settingsCache) {
+    return { ...settingsCache };
   }
+
+  if (!settingsPromise) {
+    settingsPromise = (async () => {
+      try {
+        const defaults = getDefaultSettings();
+        const raw = await (window.ChromeAPI?.storageGet ? window.ChromeAPI.storageGet() : Promise.resolve({}));
+        settingsCache = { ...defaults, ...(raw || {}) };
+        return settingsCache;
+      } catch (error) {
+        logError('Failed to get settings:', error);
+        settingsCache = getDefaultSettings();
+        return settingsCache;
+      } finally {
+        settingsPromise = null;
+      }
+    })();
+  }
+
+  const settings = await settingsPromise;
+  return { ...settings };
 }
 
 // 获取默认设置
@@ -128,6 +145,11 @@ function getDefaultSettings() {
     fontSizeEnabled: false,
     fontSize: 100
   };
+}
+
+function invalidateSettingsCache(nextSettings) {
+  settingsCache = nextSettings ? { ...nextSettings } : null;
+  settingsPromise = null;
 }
 
 // 添加CSS样式

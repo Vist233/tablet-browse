@@ -5,6 +5,25 @@
 (function () {
   const isExtension = typeof chrome !== 'undefined' && chrome.runtime;
 
+  if (typeof window.tabletBrowseDebug === 'undefined') {
+    window.tabletBrowseDebug = false;
+  }
+
+  window.logDebug = function (...args) {
+    if (!window.tabletBrowseDebug) return;
+    console.debug('[TabletBrowse]', ...args);
+  };
+
+  window.logWarn = function (...args) {
+    if (!window.tabletBrowseDebug) return;
+    console.warn('[TabletBrowse]', ...args);
+  };
+
+  window.logError = function (...args) {
+    if (!window.tabletBrowseDebug) return;
+    console.error('[TabletBrowse]', ...args);
+  };
+
   function withCallback(fn) {
     return new Promise((resolve, reject) => {
       try {

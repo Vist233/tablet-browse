@@ -3,6 +3,15 @@
  * 处理插件的后台逻辑，包括标签页管理、手势导航等
  */
 
+if (typeof self.tabletBrowseDebug === 'undefined') {
+  self.tabletBrowseDebug = false;
+}
+
+const bgDebugEnabled = () => Boolean(self.tabletBrowseDebug);
+const bgLogDebug = (...args) => { if (bgDebugEnabled()) console.debug('[TabletBrowse]', ...args); };
+const bgLogWarn = (...args) => { if (bgDebugEnabled()) console.warn('[TabletBrowse]', ...args); };
+const bgLogError = (...args) => { if (bgDebugEnabled()) console.error('[TabletBrowse]', ...args); };
+
 // 统一 Promise 封装（后台专用）
 const ChromeAPI = {
   storageGet: (keys = null) => new Promise((resolve, reject) => {
@@ -21,13 +30,12 @@ const ChromeAPI = {
 
 // 插件安装时的初始化
 chrome.runtime.onInstalled.addListener(async () => {
-  console.log('TabletBrowse Pro installed');
+  bgLogDebug('TabletBrowse Pro installed');
   // 初始化存储设置
   await ChromeAPI.storageSet({
     enabled: true,
     swipeDisabled: true,
     videoOptimization: { enabled: true },
-    touchGuard: { enabled: true },
     renderOptimization: { enabled: true }
   });
 });
@@ -47,7 +55,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           sendResponse({ success: true });
           break;
         default:
-          console.log('Unknown action:', request.action);
+          bgLogDebug('Unknown action:', request.action);
           sendResponse({ success: false, error: 'Unknown action' });
       }
     } catch (error) {
@@ -74,7 +82,7 @@ async function handleTabSwitch(direction, currentTabId) {
     
     await ChromeAPI.tabsUpdate(tabs[targetIndex].id, { active: true });
   } catch (error) {
-    console.error('Tab switch error:', error);
+    bgLogError('Tab switch error:', error);
   }
 }
 
