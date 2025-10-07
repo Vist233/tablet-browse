@@ -1,36 +1,86 @@
-![TabletBrowse Pro Logo](icons/icon128.png)
+<div align="center">
 
-# TabletBrowse Pro
+<img src="icons/icon128.png" alt="TabletBrowse Pro logo" width="128" height="128">
 
-为平板与触控体验量身打造的浏览扩展，帮助你更从容地浏览网页、观看视频、滚动长页面。即便在桌面浏览器，也能拥有贴近移动端的顺滑与安稳。
+<h1>TabletBrowse Pro</h1>
 
-## 你会爱上的理由
-- 左右边缘误触不再触发历史返回，滑动更安心。
-- 视频播放自动选择更适宜的流，观看体验与续航两者兼得。
-- 图文瀑布流、长列表加载更聪明，滚动顺滑不打扰。
-- 默认静默运行，需要时再打开调试，省心干净。
+<p>A browser extension that makes touch-first browsing effortless on tablets and 2-in-1 devices.</p>
 
-## 在 Edge 上立即体验
-[前往 Microsoft Edge 加载项商店下载](https://microsoftedge.microsoft.com/addons/detail/anjckfcfgngnlpnmkddhdceabgpllnhh)
-
-<p align="center">
-	<a href="https://microsoftedge.microsoft.com/addons/detail/tabletbrowse-pro/anjckfcfgngnlpnmkddhdceabgpllnhh" target="_blank">⭐ 给我们评分</a>
-	&nbsp;|&nbsp;
-	<a href="https://microsoftedge.microsoft.com/addons/detail/anjckfcfgngnlpnmkddhdceabgpllnhh" target="_blank">⬇️ 立即安装</a>
+<p>
+<a href="https://microsoftedge.microsoft.com/addons/detail/anjckfcfgngnlpnmkddhdceabgpllnhh"><img src="https://img.shields.io/badge/Edge_Addons-Download-blue?logo=microsoftedge&logoColor=white" alt="Microsoft Edge Add-ons"></a>
+<a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-orange.svg" alt="Apache License 2.0"></a>
 </p>
 
-## 快速上手
-1. 平板上请先安装支持扩展的浏览器（例如 Kiwi Browser），随后打开本扩展；桌面端可直接使用 Edge。
-2. 安装扩展后，点击工具栏上的 TabletBrowse Pro 图标。
-3. 按需开启或关闭各项体验增强开关。
-4. 重新加载网页即可感受更适合触控的浏览节奏。
+<p><a href="README.md">English</a> · <a href="README_CN.md">Simplified Chinese</a></p>
 
-想对比差异？试着在常用的资讯站、视频网站或图片流页面切换开关，感受更贴合平板的顺滑体验。
+</div>
 
 ---
 
-## 支持与反馈
-如果你觉得这个项目对你有帮助，欢迎在 Edge 商店里点亮你的 ⭐，或在 Issue 中提交建议 / 反馈。你的评分会帮助我们把更好的触控体验带给更多用户。
+## ✨ Why You'll Love It
 
-欢迎分享：复制扩展商店链接发送给同事 / 朋友，一起提升浏览体验。
+- **Edge Swipe Protection** – Keeps accidental back/forward navigation at bay while you scroll.
+- **Smart Video Optimization** – Favors battery-friendly H.264 streams and sensible resolutions.
+- **Rendering Relief** – Smooths image-heavy feeds and infinite scroll timelines.
+- **Quiet by Default** – Debug logging stays out of your console until you need it.
 
+## 📥 Install on Edge
+
+**[Download from the Microsoft Edge Add-ons Store](https://microsoftedge.microsoft.com/addons/detail/anjckfcfgngnlpnmkddhdceabgpllnhh)**
+
+<div align="center">
+
+[⭐ Rate Us](https://microsoftedge.microsoft.com/addons/detail/tabletbrowse-pro/anjckfcfgngnlpnmkddhdceabgpllnhh) · [⬇️ Install Now](https://microsoftedge.microsoft.com/addons/detail/tabletbrowse-pro/anjckfcfgngnlpnmkddhdceabgpllnhh)
+
+</div>
+
+## 🚀 Quick Start
+
+1. **On tablets:** Install a browser that supports extensions (e.g., Kiwi Browser), then add TabletBrowse Pro.  
+   **On desktop:** Install the extension in Microsoft Edge (or any Chromium browser with MV3 support).
+2. Click the TabletBrowse Pro icon in your toolbar.
+3. Toggle the feature switches to match your browsing style.
+4. Refresh your tabs and enjoy the touch-optimized experience.
+
+**Tip:** Try flipping the switches on your go-to news, video, or image feeds to feel the difference immediately.
+
+## 🎯 Key Features
+
+### Swipe Gesture Protection
+Creates safe zones along the screen edges to prevent accidental navigation while keeping text selection intact.
+
+### Video Stream Optimization
+Intercepts video sources, prefers H.264 codecs, and caps resolution/frame rate to balance playback smoothness with battery life.
+
+### Intelligent Render Optimization
+- Lazy-loads images and iframes for faster first paint.
+- Trims oversized entries from `srcset` lists.
+- Dials down heavy animations on long-scrolling pages.
+- Keeps memory usage in check on media-dense sites.
+
+## 🛠️ For Developers
+
+Interested in hacking on TabletBrowse Pro? Dive into the docs:
+
+- [`TECHNICAL_OVERVIEW.md`](TECHNICAL_OVERVIEW.md) – Architecture, modules, and runtime details.
+- [`AGENTS.md`](AGENTS.md) – Contribution guidelines and coding conventions.
+
+The extension ships as pure Manifest V3—no build step required. Load it unpacked via `chrome://extensions` with Developer Mode enabled.
+
+## 📝 License
+
+Licensed under the Apache License, Version 2.0. See [`LICENSE`](LICENSE) for details.
+
+## 💬 Support & Feedback
+
+- ⭐ [Rate the extension](https://microsoftedge.microsoft.com/addons/detail/tabletbrowse-pro/anjckfcfgngnlpnmkddhdceabgpllnhh)
+- 🐛 [Open an issue](https://github.com/Vist233/BrowserUseForPad/issues)
+- 💡 Share ideas to help more tablet users browse comfortably.
+
+---
+
+<div align="center">
+
+Made with ❤️ for tablet users everywhere.
+
+</div>
