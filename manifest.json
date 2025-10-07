@@ -66,5 +66,8 @@
         "http://*/*"
       ]
     }
-  ]
+  ],
+
+  "homepage_url": "https://microsoftedge.microsoft.com/addons/detail/anjckfcfgngnlpnmkddhdceabgpllnhh",
+  "author": "Vist233"
 }
