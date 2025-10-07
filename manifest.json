@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Tablet Browse",
   "version": "1.3.0",
-  "description": "专为平板优化的浏览器插件，提供视频播放优化、触摸保护、渲染优化等全方位平板浏览增强功能",
+  "description": "A browser extension optimized for tablets, providing video playback optimization, touch protection, rendering optimization, and comprehensive tablet browsing enhancements.",
   
   "permissions": [
     "tabs",
