@@ -226,11 +226,6 @@ class EnvironmentAdapter {
     if (this.env.isTestMode && !this.env.isExtension) {
       this.showTestModeNotice();
     }
-    
-    // 在平板设备上显示优化提示
-    if (this.env.isTablet.isTablet) {
-      this.showTabletOptimizationNotice();
-    }
   }
   
   showTestModeNotice() {
@@ -293,73 +288,6 @@ class EnvironmentAdapter {
         setTimeout(() => notice.remove(), 500);
       }
     }, 10000);
-  }
-  
-  showTabletOptimizationNotice() {
-    // 创建平板优化提示
-    const notice = document.createElement('div');
-    notice.id = 'tb-tablet-notice';
-    notice.style.cssText = `
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      background: rgba(40, 167, 69, 0.9);
-      color: white;
-      padding: 12px 16px;
-      border-radius: 8px;
-      font-size: 13px;
-      z-index: 10001;
-      max-width: 280px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      border-left: 4px solid #28a745;
-    `;
-    
-    const deviceInfo = this.env.isTablet;
-    notice.innerHTML = `
-      <div style="font-weight: bold; margin-bottom: 6px;">📱 平板优化已启用</div>
-      <div style="font-size: 12px; margin-bottom: 4px;">
-        设备: ${this.env.screenSize} 屏幕 (${this.env.orientation})
-      </div>
-      <div style="font-size: 11px; opacity: 0.9;">
-        • 触摸延迟已优化 (600ms)<br>
-        • 手势识别已调整<br>
-        • 触摸目标已增大
-      </div>
-    `;
-    
-    // 添加关闭按钮
-    const closeBtn = document.createElement('button');
-    closeBtn.innerHTML = '×';
-    closeBtn.style.cssText = `
-      position: absolute;
-      top: 6px;
-      right: 10px;
-      background: none;
-      border: none;
-      font-size: 18px;
-      cursor: pointer;
-      color: white;
-      padding: 0;
-      width: 22px;
-      height: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    `;
-    
-    closeBtn.onclick = () => notice.remove();
-    notice.appendChild(closeBtn);
-    
-    document.body.appendChild(notice);
-    
-    // 8秒后自动隐藏
-    setTimeout(() => {
-      if (notice.parentNode) {
-        notice.style.opacity = '0';
-        notice.style.transition = 'opacity 0.5s';
-        setTimeout(() => notice.remove(), 500);
-      }
-    }, 8000);
   }
 }
 
